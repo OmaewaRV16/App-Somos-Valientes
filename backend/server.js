@@ -1,43 +1,57 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./db");
-const routes = require("./routes"); // tus otras rutas
-const cuponesRoutes = require("./routes/cupones"); // Rutas de cupones
-const accionesRoutes = require("./routes/acciones"); // Rutas de acciones
-const comentariosRoutes = require("./routes/comentarios"); // Rutas de comentarios
-const userRoutes = require("./routes/userRoutes"); // 🔹 Rutas de usuarios con verificación
-const User = require("./models/User"); // modelo de usuarios
+
+const routes = require("./routes");
+const cuponesRoutes = require("./routes/cupones");
+const accionesRoutes = require("./routes/acciones");
+const comentariosRoutes = require("./routes/comentarios");
+const userRoutes = require("./routes/userRoutes");
+
+const User = require("./models/User");
 const bcrypt = require("bcrypt");
 
 const app = express();
+
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
+// Conectar a MongoDB (Atlas)
 connectDB();
 
-// 🔹 Rutas de usuarios con registro/verificación
+// 🔹 Endpoint de prueba (OBLIGATORIO para Railway)
+app.get("/ping", (req, res) => {
+  res.json({ ok: true, status: "Sociedad Valiente backend activo" });
+});
+
+// 🔹 Rutas de usuarios (registro / login / verificación)
 app.use("/api", userRoutes);
 
-// Rutas generales
+// 🔹 Rutas generales
 app.use("/api", routes);
 
-// Rutas de cupones
+// 🔹 Rutas de cupones
 app.use("/api/cupones", cuponesRoutes);
 
-// Rutas de acciones
+// 🔹 Rutas de acciones
 app.use("/api/acciones", accionesRoutes);
 
-// Rutas de comentarios
+// 🔹 Rutas de comentarios
 app.use("/api/comentarios", comentariosRoutes);
 
-// Crear admin automáticamente si no existe
+// 🔹 Crear admin automáticamente si no existe
 const crearAdmin = async () => {
   try {
     const existeAdmin = await User.findOne({ rol: "admin" });
+
     if (!existeAdmin) {
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash("admin123", salt);
+      const hashedPassword = await bcrypt.hash(
+        process.env.ADMIN_PASSWORD || "admin123",
+        salt
+      );
 
       const admin = new User({
         nombres: "Administrador",
@@ -48,7 +62,7 @@ const crearAdmin = async () => {
         rol: "admin",
         direccion: "",
         fechaNac: "2000-01-01",
-        verificado: true // 🔹 Admin siempre verificado
+        verificado: true
       });
 
       await admin.save();
@@ -60,9 +74,12 @@ const crearAdmin = async () => {
     console.error("❌ Error creando admin:", error);
   }
 };
+
 crearAdmin();
 
-const PORT = 3000;
-app.listen(PORT, "192.168.2.205", () => {
-  console.log(`✅ Servidor corriendo en http://192.168.2.205:${PORT}`);
+// 🔹 Puerto dinámico para Railway (CLAVE)
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
 });
