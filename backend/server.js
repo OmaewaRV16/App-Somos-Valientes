@@ -3,7 +3,6 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./db");
 
-const routes = require("./routes");
 const cuponesRoutes = require("./routes/cupones");
 const accionesRoutes = require("./routes/acciones");
 const comentariosRoutes = require("./routes/comentarios");
@@ -14,77 +13,44 @@ const bcrypt = require("bcrypt");
 
 const app = express();
 
-// ==================
-// Middlewares
-// ==================
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(cors());
 app.use(express.json());
 
-// ==================
-// Health check
-// ==================
+// 🔥 CONEXIÓN DB
+connectDB().then(crearAdmin);
+
+// 🔥 HEALTH CHECK
 app.get("/ping", (req, res) => {
-  res.json({ ok: true, status: "Sociedad Valiente backend activo" });
+  res.json({ ok: true, message: "Backend activo Sociedad Valiente" });
 });
 
-// ==================
-// Rutas
-// ==================
+// 🔥 RUTAS
 app.use("/api/cupones", cuponesRoutes);
 app.use("/api/acciones", accionesRoutes);
 app.use("/api/comentarios", comentariosRoutes);
 app.use("/api", userRoutes);
-app.use("/api", routes);
 
-// ==================
-// Crear admin
-// ==================
-const crearAdmin = async () => {
-  try {
-    const existeAdmin = await User.findOne({ rol: "admin" });
+// 🔥 ADMIN
+async function crearAdmin() {
+  const existeAdmin = await User.findOne({ rol: "admin" });
+  if (existeAdmin) return console.log("ℹ️ Admin ya existe");
 
-    if (!existeAdmin) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(
-        process.env.ADMIN_PASSWORD || "admin123",
-        salt
-      );
-
-      const admin = new User({
-        nombres: "Administrador",
-        apellidoP: "Sistema",
-        apellidoM: "",
-        celular: "9993292792",
-        password: hashedPassword,
-        rol: "admin",
-        direccion: "",
-        fechaNac: "2000-01-01",
-        verificado: true
-      });
-
-      await admin.save();
-      console.log("✅ Admin creado automáticamente");
-    } else {
-      console.log("ℹ️ Admin ya existe");
-    }
-  } catch (error) {
-    console.error("❌ Error creando admin:", error);
-  }
-};
-
-// ==================
-// Arranque del servidor
-// ==================
-const PORT = process.env.PORT || 3000;
-
-connectDB().then(() => {
-  setTimeout(crearAdmin, 1000);
-
-  app.listen(PORT, () => {
-    console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD || "admin123", 10);
+  await User.create({
+    nombres: "Administrador",
+    apellidoP: "Sistema",
+    celular: "9993292792",
+    password: hash,
+    rol: "admin",
+    verificado: true
   });
+
+  console.log("✅ Admin creado");
+}
+
+// 🔥 PUERTO RAILWAY
+const PORT = process.env.PORT;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Servidor escuchando en ${PORT}`);
 });
