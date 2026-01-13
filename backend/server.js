@@ -14,7 +14,9 @@ const bcrypt = require("bcrypt");
 
 const app = express();
 
+// ==================
 // Middlewares
+// ==================
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -22,26 +24,25 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Conectar a MongoDB
-connectDB();
-
-// Health check (Railway)
+// ==================
+// Health check
+// ==================
 app.get("/ping", (req, res) => {
   res.json({ ok: true, status: "Sociedad Valiente backend activo" });
 });
 
-// Rutas específicas primero
+// ==================
+// Rutas
+// ==================
 app.use("/api/cupones", cuponesRoutes);
 app.use("/api/acciones", accionesRoutes);
 app.use("/api/comentarios", comentariosRoutes);
-
-// Auth / users
 app.use("/api", userRoutes);
-
-// Rutas generales al final
 app.use("/api", routes);
 
+// ==================
 // Crear admin
+// ==================
 const crearAdmin = async () => {
   try {
     const existeAdmin = await User.findOne({ rol: "admin" });
@@ -75,13 +76,15 @@ const crearAdmin = async () => {
   }
 };
 
+// ==================
+// Arranque del servidor
+// ==================
+const PORT = process.env.PORT || 3000;
+
 connectDB().then(() => {
   setTimeout(crearAdmin, 1000);
-});
 
-
-// Puerto Railway
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  });
 });
