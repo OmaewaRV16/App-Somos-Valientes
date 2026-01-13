@@ -12,29 +12,32 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// ✅ URL PRODUCCIÓN
+const API_URL = "https://app-somos-valientes-production.up.railway.app";
+
 export default function AdminParticipantesScreen({ navigation }) {
   const [participantes, setParticipantes] = useState([]);
-  const [filtered, setFiltered] = useState([]); // lista filtrada
-  const [search, setSearch] = useState("");     // texto búsqueda
+  const [filtered, setFiltered] = useState([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadParticipantes = useCallback(async () => {
     try {
-      const resp = await fetch('http://192.168.2.205:3000/api/users'); 
+      const resp = await fetch(`${API_URL}/api/users`);
+      if (!resp.ok) throw new Error();
+
       const data = await resp.json();
-
-      if (!resp.ok) {
-        Alert.alert('Error', data.message || 'No se pudieron cargar los participantes');
-        return;
-      }
-
       const filtrados = data.filter(u => u.rol === 'participante');
+
       setParticipantes(filtrados);
-      setFiltered(filtrados);  // iniciar con todos
+      setFiltered(filtrados);
     } catch (error) {
       console.log(error);
-      Alert.alert('Error', 'No se pudieron cargar los participantes. Revisa tu backend.');
+      Alert.alert(
+        'Error',
+        'No se pudieron cargar los participantes. Intenta más tarde.'
+      );
     }
   }, []);
 
@@ -54,10 +57,12 @@ export default function AdminParticipantesScreen({ navigation }) {
   };
 
   const verDetalle = (item) => {
-    navigation.getParent()?.navigate('DetalleParticipante', { participante: item });
+    navigation
+      .getParent()
+      ?.navigate('DetalleParticipante', { participante: item });
   };
 
-  // Filtrar mientras escribe
+  // 🔎 Buscar participante
   const buscar = (text) => {
     setSearch(text);
     const filtro = participantes.filter(p =>
@@ -70,16 +75,19 @@ export default function AdminParticipantesScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View style={{ flex:1, justifyContent:'center', alignItems:'center', backgroundColor:'#000' }}>
+      <View style={styles.loading}>
         <ActivityIndicator size="large" color="#ccff34" />
-        <Text style={{ color:'#ccff34', marginTop:5 }}>Cargando participantes...</Text>
+        <Text style={styles.loadingText}>
+          Cargando participantes...
+        </Text>
       </View>
     );
   }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* ✅ Barra de búsqueda */}
+
+      {/* Barra de búsqueda */}
       <View style={styles.searchBox}>
         <TextInput
           style={styles.searchInput}
@@ -102,11 +110,23 @@ export default function AdminParticipantesScreen({ navigation }) {
             colors={['#ccff34']}
           />
         }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>
+            No hay participantes coincidentes
+          </Text>
+        }
         renderItem={({ item, index }) => (
-          <TouchableOpacity style={styles.accion} onPress={() => verDetalle(item)}>
-            <Text style={styles.titulo}>{index + 1}. {item.nombres} {item.apellidoP} {item.apellidoM}</Text>
+          <TouchableOpacity
+            style={styles.accion}
+            onPress={() => verDetalle(item)}
+          >
+            <Text style={styles.titulo}>
+              {index + 1}. {item.nombres} {item.apellidoP} {item.apellidoM}
+            </Text>
             <View style={styles.resaltaContainer}>
-              <Text style={styles.subtitulo}>Selecciona para saber más</Text>
+              <Text style={styles.subtitulo}>
+                Selecciona para saber más
+              </Text>
             </View>
           </TouchableOpacity>
         )}
@@ -119,7 +139,17 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#000' },
   container: { padding: 30, paddingBottom: 100 },
 
-  // ✅ Estilo barra de búsqueda
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000'
+  },
+  loadingText: {
+    color: '#ccff34',
+    marginTop: 8
+  },
+
   searchBox: {
     paddingHorizontal: 20,
     paddingTop: 15,
@@ -141,12 +171,10 @@ const styles = StyleSheet.create({
     padding: 25,
     borderRadius: 8,
     marginBottom: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
     elevation: 3,
   },
   titulo: { fontSize: 25, fontWeight: 'bold', marginBottom: 5 },
+
   resaltaContainer: {
     backgroundColor: '#00000071',
     padding: 5,
@@ -159,4 +187,12 @@ const styles = StyleSheet.create({
     color: '#ccff34',
     fontWeight: 'bold',
   },
+
+  emptyText: {
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 40,
+    fontSize: 16,
+    fontWeight: 'bold'
+  }
 });

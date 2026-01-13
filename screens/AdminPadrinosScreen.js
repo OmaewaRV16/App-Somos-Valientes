@@ -12,6 +12,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// ✅ URL PRODUCCIÓN
+const API_URL = "https://app-somos-valientes-production.up.railway.app";
+
 export default function AdminPadrinosScreen({ navigation }) {
   const [padrinos, setPadrinos] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -21,18 +24,20 @@ export default function AdminPadrinosScreen({ navigation }) {
 
   const loadPadrinos = useCallback(async () => {
     try {
-      const resp = await fetch('http://192.168.2.205:3000/api/users'); 
+      const resp = await fetch(`${API_URL}/api/users`);
+      if (!resp.ok) throw new Error();
+
       const data = await resp.json();
-      if (!resp.ok) {
-        Alert.alert('Error', data.message || 'No se pudieron cargar los padrinos');
-        return;
-      }
       const filtrados = data.filter(u => u.rol === 'padrino');
+
       setPadrinos(filtrados);
       setFiltered(filtrados);
     } catch (error) {
       console.log(error);
-      Alert.alert('Error', 'No se pudieron cargar los padrinos. Revisa tu backend.');
+      Alert.alert(
+        'Error',
+        'No se pudieron cargar los padrinos. Intenta más tarde.'
+      );
     }
   }, []);
 
@@ -55,7 +60,7 @@ export default function AdminPadrinosScreen({ navigation }) {
     navigation.navigate('DetallePadrino', { padrino: item });
   };
 
-  // ✅ Filtrar al escribir
+  // 🔎 Buscar padrino
   const buscar = (text) => {
     setSearch(text);
     const match = padrinos.filter(p =>
@@ -68,9 +73,9 @@ export default function AdminPadrinosScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View style={{ flex:1, justifyContent:'center', alignItems:'center', backgroundColor:'#000' }}>
+      <View style={styles.loading}>
         <ActivityIndicator size="large" color="#ccff34" />
-        <Text style={{ color:'#ccff34', marginTop:5 }}>Cargando padrinos...</Text>
+        <Text style={styles.loadingText}>Cargando padrinos...</Text>
       </View>
     );
   }
@@ -78,7 +83,7 @@ export default function AdminPadrinosScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea}>
 
-      {/* ✅ Barra de búsqueda */}
+      {/* Barra de búsqueda */}
       <View style={styles.searchBox}>
         <TextInput
           style={styles.searchInput}
@@ -101,8 +106,16 @@ export default function AdminPadrinosScreen({ navigation }) {
             colors={['#ccff34']}
           />
         }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>
+            No hay padrinos coincidentes
+          </Text>
+        }
         renderItem={({ item, index }) => (
-          <TouchableOpacity style={styles.accion} onPress={() => verDetalle(item)}>
+          <TouchableOpacity
+            style={styles.accion}
+            onPress={() => verDetalle(item)}
+          >
             <Text style={styles.titulo}>
               {index + 1}. {item.nombres} {item.apellidoP} {item.apellidoM}
             </Text>
@@ -120,7 +133,17 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#000' },
   container: { padding: 30, paddingBottom: 100 },
 
-  // ✅ Barra de búsqueda
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000'
+  },
+  loadingText: {
+    color: '#ccff34',
+    marginTop: 8
+  },
+
   searchBox: {
     paddingHorizontal: 20,
     paddingTop: 15,
@@ -142,12 +165,10 @@ const styles = StyleSheet.create({
     padding: 25,
     borderRadius: 8,
     marginBottom: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
     elevation: 3,
   },
   titulo: { fontSize: 25, fontWeight: 'bold', marginBottom: 5 },
+
   resaltaContainer: {
     backgroundColor: '#00000071',
     padding: 5,
@@ -160,4 +181,12 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontWeight: 'bold',
   },
+
+  emptyText: {
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 40,
+    fontSize: 16,
+    fontWeight: 'bold'
+  }
 });

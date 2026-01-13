@@ -1,7 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Text, FlatList, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  RefreshControl
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+
+const API_URL = "https://app-somos-valientes-production.up.railway.app";
 
 export default function AccionesScreen({ route }) {
   const { user } = route.params;
@@ -11,10 +20,13 @@ export default function AccionesScreen({ route }) {
   // Cargar acciones desde la API
   const loadAcciones = async () => {
     try {
-      const response = await fetch('http://192.168.2.205:3000/api/acciones');
-      if (!response.ok) throw new Error('Error al cargar las acciones');
+      const response = await fetch(`${API_URL}/api/acciones`);
+      if (!response.ok) {
+        throw new Error('Error al cargar las acciones');
+      }
+
       const data = await response.json();
-      setAcciones(data);
+      setAcciones(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log(error);
       Alert.alert('Error', 'No se pudieron cargar las acciones');
@@ -38,7 +50,6 @@ export default function AccionesScreen({ route }) {
   // Función al tocar acción
   const seleccionarAccion = (id) => {
     console.log('Acción seleccionada:', id);
-    // Aquí puedes ejecutar lo que quieras al seleccionar la acción
   };
 
   const renderItem = ({ item }) => (
@@ -48,7 +59,7 @@ export default function AccionesScreen({ route }) {
       activeOpacity={0.7}
     >
       <Text style={styles.titulo}>{item.titulo}</Text>
-      <Text style={styles.descripcion}> {item.descripcion}</Text>
+      <Text style={styles.descripcion}>{item.descripcion}</Text>
     </TouchableOpacity>
   );
 
@@ -61,6 +72,11 @@ export default function AccionesScreen({ route }) {
         renderItem={renderItem}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        ListEmptyComponent={
+          <Text style={{ color: '#fff', textAlign: 'center', marginTop: 40 }}>
+            No hay acciones disponibles
+          </Text>
         }
       />
     </SafeAreaView>
@@ -80,7 +96,12 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
-  titulo: { fontSize: 16, fontWeight: 'bold', marginBottom: 5, color: '#000000ff' },
+  titulo: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#000000ff'
+  },
   descripcion: {
     color: '#000000ff',
   },

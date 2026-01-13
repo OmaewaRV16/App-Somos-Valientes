@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, Modal, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Modal,
+  Dimensions
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+
+const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function AdminPerfilScreen({ navigation }) {
   const [user, setUser] = useState(null);
@@ -15,13 +26,16 @@ export default function AdminPerfilScreen({ navigation }) {
         const parsedUser = JSON.parse(data);
         setUser(parsedUser);
 
-        const uri = await AsyncStorage.getItem(`userImage-${parsedUser.correo}`);
+        const uri = await AsyncStorage.getItem(`userImage-${parsedUser.celular}`);
         if (uri) setImagen(uri);
       }
     };
     cargarUsuario();
   }, []);
 
+  // ==========================
+  // FOTO DE PERFIL
+  // ==========================
   const seleccionarImagen = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -30,7 +44,7 @@ export default function AdminPerfilScreen({ navigation }) {
         return;
       }
 
-      let result = await ImagePicker.launchImageLibraryAsync({
+      const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
@@ -40,7 +54,7 @@ export default function AdminPerfilScreen({ navigation }) {
       if (!result.canceled) {
         const uri = result.assets[0].uri;
         setImagen(uri);
-        await AsyncStorage.setItem(`userImage-${user.correo}`, uri);
+        await AsyncStorage.setItem(`userImage-${user.celular}`, uri);
       }
     } catch (error) {
       console.log(error);
@@ -48,10 +62,13 @@ export default function AdminPerfilScreen({ navigation }) {
     }
   };
 
+  // ==========================
+  // CERRAR SESIÓN
+  // ==========================
   const cerrarSesion = () => {
     Alert.alert(
-      'Cerrar Sesión',
-      '¿Estás seguro que quieres cerrar sesión?',
+      'Cerrar sesión',
+      '¿Deseas cerrar sesión?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -69,7 +86,59 @@ export default function AdminPerfilScreen({ navigation }) {
     );
   };
 
-  if (!user) return <Text>Cargando...</Text>;
+  // ==========================
+  // ELIMINAR CUENTA (🔥)
+  // ==========================
+  const eliminarCuenta = () => {
+    Alert.alert(
+      'Eliminar cuenta',
+      'Esta acción es permanente y NO se puede deshacer.\n\n¿Deseas continuar?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await fetch(
+                `${API_URL}/api/users/${user._id}`,
+                { method: 'DELETE' }
+              );
+
+              if (!response.ok) {
+                const data = await response.json();
+                Alert.alert('Error', data.message || 'No se pudo eliminar la cuenta');
+                return;
+              }
+
+              await AsyncStorage.removeItem('currentUser');
+              await AsyncStorage.removeItem(`userImage-${user.celular}`);
+
+              Alert.alert(
+                'Cuenta eliminada',
+                'Tu cuenta fue eliminada correctamente',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () =>
+                      navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Welcome' }],
+                      }),
+                  },
+                ]
+              );
+            } catch (error) {
+              console.log(error);
+              Alert.alert('Error', 'No se pudo conectar con el servidor');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  if (!user) return <Text style={{ color: '#fff' }}>Cargando...</Text>;
 
   const { width } = Dimensions.get('window');
 
@@ -82,17 +151,20 @@ export default function AdminPerfilScreen({ navigation }) {
             style={styles.foto}
           />
         </TouchableOpacity>
-        <Text style={styles.label}>Soy:</Text>
+
+        <Text style={styles.label}>Rol:</Text>
         <Text style={styles.rol}>{user.rol}</Text>
 
-        <Text style={styles.nombre}>{user.nombres} {user.apellidoP}</Text>
+        <Text style={styles.nombre}>
+          {user.nombres} {user.apellidoP}
+        </Text>
 
-        <TouchableOpacity style={styles.boton} onPress={seleccionarImagen}>
+        <TouchableOpacity style={styles.botonFoto} onPress={seleccionarImagen}>
           <Text style={styles.botonTextoFoto}>Cambiar Foto</Text>
         </TouchableOpacity>
 
         <View style={styles.info}>
-          <Text style={styles.label}>Número Celular:</Text>
+          <Text style={styles.label}>Celular:</Text>
           <Text>{user.celular}</Text>
 
           <Text style={styles.label}>Dirección:</Text>
@@ -103,22 +175,28 @@ export default function AdminPerfilScreen({ navigation }) {
         </View>
       </View>
 
+      {/* Cerrar sesión */}
       <TouchableOpacity style={styles.botonCerrar} onPress={cerrarSesion}>
         <Text style={styles.botonTexto}>Cerrar Sesión</Text>
       </TouchableOpacity>
 
+      {/* Eliminar cuenta */}
+      <TouchableOpacity style={styles.botonEliminar} onPress={eliminarCuenta}>
+        <Text style={styles.botonEliminarTexto}>Eliminar Cuenta</Text>
+      </TouchableOpacity>
+
       <Text style={styles.version}>v1.0 Beta</Text>
 
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <TouchableOpacity style={styles.modalFondo} activeOpacity={1} onPress={() => setModalVisible(false)}>
+      {/* Modal imagen */}
+      <Modal visible={modalVisible} transparent animationType="fade">
+        <TouchableOpacity
+          style={styles.modalFondo}
+          activeOpacity={1}
+          onPress={() => setModalVisible(false)}
+        >
           <Image
             source={imagen ? { uri: imagen } : require('../assets/default-profile.png')}
-            style={[styles.modalImagen, { width: width - 40, height: width - 40 }]}
+            style={{ width: width - 40, height: width - 40, borderRadius: 15 }}
           />
         </TouchableOpacity>
       </Modal>
@@ -126,63 +204,71 @@ export default function AdminPerfilScreen({ navigation }) {
   );
 }
 
+// ==========================
+// ESTILOS
+// ==========================
 const styles = StyleSheet.create({
-  container: { flex:1, backgroundColor:'#000000ff', alignItems:'center', justifyContent: 'center', padding:30 },
-  rol: {
-  fontSize: 20,
-  color: '#000000ff',
-  marginBottom: 10,
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+    padding: 30,
+    justifyContent: 'center',
   },
   card: {
-    width: '100%',
-    backgroundColor:'#ccff34',
-    borderRadius:20,
-    paddingTop:200,
-    paddingBottom:20,
-    paddingHorizontal:20,
-    alignItems:'center',
+    backgroundColor: '#ccff34',
+    borderRadius: 20,
+    paddingTop: 200,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  imageWrapper: {
+    position: 'absolute',
+    top: 50,
+    borderRadius: 60,
+    overflow: 'hidden',
+    borderWidth: 4,
+    borderColor: '#000',
+  },
+  foto: { width: 120, height: 120, borderRadius: 60 },
+  nombre: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+  rol: { fontSize: 18, marginBottom: 10 },
+  info: { alignSelf: 'stretch', marginTop: 10 },
+  label: { fontWeight: 'bold', marginTop: 10 },
+
+  botonFoto: {
+    backgroundColor: '#000',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginVertical: 10,
+  },
+  botonTextoFoto: { color: '#ccff34', fontWeight: 'bold' },
+
+  botonCerrar: {
+    backgroundColor: '#ccff34',
+    paddingVertical: 10,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  botonTexto: { fontWeight: 'bold', color: '#000' },
+
+  botonEliminar: {
+    backgroundColor: '#ff3b30',
+    paddingVertical: 10,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  botonEliminarTexto: { color: '#fff', fontWeight: 'bold' },
+
+  version: { position: 'absolute', bottom: 10, right: 20, color: '#999' },
+
+  modalFondo: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
     justifyContent: 'center',
-    shadowColor:'#ccff34',
-    shadowOffset:{ width:0, height:5 },
-    shadowOpacity:0.15,
-    shadowRadius:10,
-    elevation:5,
-    marginTop:20
+    alignItems: 'center',
   },
-  imageWrapper:{
-    position:'absolute',
-    top:50,
-    borderRadius:60,
-    overflow:'hidden',
-    borderWidth:4,
-    borderColor:'black'
-  },
-  foto:{ width:120, height:120, borderRadius:60 },
-  nombre:{ fontSize:20, fontWeight:'bold', marginBottom:10, color:'#333' },
-  boton:{
-    backgroundColor:'#000000ff',
-    paddingVertical:8,
-    paddingHorizontal:20,
-    borderRadius:20,
-    marginVertical:10
-  },
-  botonTexto:{ color:'#000000ff', fontWeight:'bold', textAlign:'center' },
-  info:{ alignSelf:'stretch', marginTop:10 },
-  label:{ fontWeight:'bold', marginTop:10, color:'#555' },
-  botonTextoFoto: {
-    color: '#ccff34',
-    fontWeight:'bold', 
-    textAlign:'center'
-  },
-  botonCerrar:{
-    width:'100%',
-    backgroundColor:'#ccff34',
-    paddingVertical:10,
-    borderRadius:25,
-    alignItems:'center',
-    marginTop:20
-  },
-  version:{ position:'absolute', bottom:10, right:20, color:'#999', fontSize:12 },
-  modalFondo:{ flex:1, backgroundColor:'rgba(0,0,0,0.8)', justifyContent:'center', alignItems:'center' },
-  modalImagen:{ borderRadius:15 },
 });

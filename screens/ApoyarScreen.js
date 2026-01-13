@@ -10,6 +10,9 @@ import {
   Alert,
 } from 'react-native';
 
+// ✅ URL PRODUCCIÓN
+const API_URL = "https://app-somos-valientes-production.up.railway.app";
+
 export default function ApoyarScreen({ route }) {
   const { user } = route.params;
   const [participantes, setParticipantes] = useState([]);
@@ -18,12 +21,19 @@ export default function ApoyarScreen({ route }) {
   useEffect(() => {
     const loadParticipantes = async () => {
       try {
-        const response = await fetch('http://192.168.2.205:3000/api/users/rol/participante');
+        const response = await fetch(
+          `${API_URL}/api/users/rol/participante`
+        );
+        if (!response.ok) throw new Error();
+
         const participantesData = await response.json();
         setParticipantes(participantesData);
       } catch (error) {
         console.log(error);
-        Alert.alert('Error', 'No se pudieron cargar los participantes');
+        Alert.alert(
+          'Error',
+          'No se pudieron cargar los participantes'
+        );
       }
     };
 
@@ -32,28 +42,37 @@ export default function ApoyarScreen({ route }) {
 
   const handleApoyar = async (participante) => {
     const monto = montos[participante._id];
+
     if (!monto || isNaN(monto) || Number(monto) <= 0) {
       Alert.alert('Error', 'Ingresa un monto válido');
       return;
     }
 
     try {
-      await fetch("http://192.168.2.205:3000/api/apoyos", {
+      const resp = await fetch(`${API_URL}/api/apoyos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          padrino: user._id,                      // quien dona
-          participante: participante._id,          // quien recibe
+          padrino: user._id,          // quien dona
+          participante: participante._id, // quien recibe
           monto: Number(monto)
         })
       });
 
-      Alert.alert('Éxito', `Has apoyado a ${participante.nombres} con $${monto}`);
-      setMontos(prev => ({ ...prev, [participante._id]: '' }));
+      if (!resp.ok) throw new Error();
 
+      Alert.alert(
+        'Éxito',
+        `Has apoyado a ${participante.nombres} con $${monto}`
+      );
+
+      setMontos(prev => ({ ...prev, [participante._id]: '' }));
     } catch (error) {
       console.log(error);
-      Alert.alert("Error", "No se pudo registrar el apoyo");
+      Alert.alert(
+        "Error",
+        "No se pudo registrar el apoyo. Intenta más tarde."
+      );
     }
   };
 
@@ -63,9 +82,16 @@ export default function ApoyarScreen({ route }) {
         contentContainerStyle={styles.container}
         data={participantes}
         keyExtractor={(item) => item._id}
+        ListEmptyComponent={
+          <Text style={{ color:'#fff', textAlign:'center', marginTop:40 }}>
+            No hay participantes disponibles
+          </Text>
+        }
         renderItem={({ item }) => (
           <View style={styles.participante}>
-            <Text style={styles.nombre}>{item.nombres} {item.apellidoP} {item.apellidoM}</Text>
+            <Text style={styles.nombre}>
+              {item.nombres} {item.apellidoP} {item.apellidoM}
+            </Text>
 
             <TextInput
               placeholder="Monto de apoyo"
@@ -78,7 +104,10 @@ export default function ApoyarScreen({ route }) {
               }
             />
 
-            <TouchableOpacity style={styles.boton} onPress={() => handleApoyar(item)}>
+            <TouchableOpacity
+              style={styles.boton}
+              onPress={() => handleApoyar(item)}
+            >
               <Text style={styles.botonTexto}>Apoyar</Text>
             </TouchableOpacity>
           </View>
@@ -87,6 +116,7 @@ export default function ApoyarScreen({ route }) {
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -100,9 +130,6 @@ const styles = StyleSheet.create({
     padding:15,
     borderRadius:8,
     marginBottom:15,
-    shadowColor:'#000',
-    shadowOpacity:0.1,
-    shadowRadius:5,
     elevation:3,
   },
   nombre:{
@@ -119,15 +146,14 @@ const styles = StyleSheet.create({
     borderRadius:5,
     padding:8,
     marginBottom:10,
+    color:'#ccff34'
   },
   boton:{
     backgroundColor:'#000000ff',
     padding:10,
     borderRadius:5,
-    width: 200,
     alignItems:'center',
-    textAlign: 'center',
-    margin: 'auto'
+    marginTop:5
   },
   botonTexto:{
     color:'#ccff34',

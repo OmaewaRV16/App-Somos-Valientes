@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// ✅ URL PRODUCCIÓN
+const API_URL = "https://app-somos-valientes-production.up.railway.app/api/comentarios";
+
 export default function ComentariosScreen({ route }) {
   const { user } = route.params;
   const [texto, setTexto] = useState('');
-
-  const API_URL = 'http://192.168.2.205:3000/api/comentarios';
 
   const enviarComentario = async () => {
     if (!texto.trim()) {
@@ -36,13 +37,16 @@ export default function ComentariosScreen({ route }) {
         body: JSON.stringify(nuevo),
       });
 
-      if (!response.ok) throw new Error('Error al enviar comentario');
+      if (!response.ok) throw new Error();
 
       setTexto('');
       Alert.alert('Gracias', 'Tu comentario ha sido enviado.');
     } catch (error) {
       console.log(error);
-      Alert.alert('Error', 'Ocurrió un problema al enviar tu comentario.');
+      Alert.alert(
+        'Error',
+        'Ocurrió un problema al enviar tu comentario. Intenta más tarde.'
+      );
     }
   };
 
@@ -57,7 +61,9 @@ export default function ComentariosScreen({ route }) {
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.titulo}>Envía tu opinión o sugerencia</Text>
+          <Text style={styles.titulo}>
+            Envía tu opinión o sugerencia
+          </Text>
 
           <TextInput
             placeholder="Escribe aquí..."
@@ -69,7 +75,10 @@ export default function ComentariosScreen({ route }) {
             onChangeText={setTexto}
           />
 
-          <TouchableOpacity style={styles.boton} onPress={enviarComentario}>
+          <TouchableOpacity
+            style={styles.boton}
+            onPress={enviarComentario}
+          >
             <Text style={styles.botonTexto}>Enviar</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -79,7 +88,10 @@ export default function ComentariosScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#000000ff' },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#000000ff'
+  },
   container: {
     padding: 20,
     flexGrow: 1,
@@ -99,6 +111,7 @@ const styles = StyleSheet.create({
     padding: 10,
     textAlignVertical: 'top',
     marginBottom: 20,
+    color: '#ccff34'
   },
   boton: {
     backgroundColor: '#ccff34',

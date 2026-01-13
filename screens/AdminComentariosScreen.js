@@ -13,18 +13,18 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+const API_URL = "https://app-somos-valientes-production.up.railway.app";
+
 export default function AdminComentariosScreen() {
   const [comentarios, setComentarios] = useState([]);
   const [filteredComentarios, setFilteredComentarios] = useState([]);
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
-  const API_URL = 'http://192.168.2.205:3000/api/comentarios';
-
   const loadComentarios = async () => {
     try {
-      const response = await fetch(API_URL);
-      if (!response.ok) throw new Error('Error al cargar comentarios');
+      const response = await fetch(`${API_URL}/api/comentarios`);
+      if (!response.ok) throw new Error();
       const data = await response.json();
       setComentarios(data);
       setFilteredComentarios(data);
@@ -44,7 +44,6 @@ export default function AdminComentariosScreen() {
     setRefreshing(false);
   };
 
-  // ✅ Filtrar comentarios por número de celular
   const buscarComentarios = (text) => {
     setSearch(text);
     if (text.trim() === '') {
@@ -57,30 +56,37 @@ export default function AdminComentariosScreen() {
     }
   };
 
-  const eliminarComentario = async (id) => {
-    Alert.alert('Eliminar Comentario', '¿Deseas eliminar este comentario?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Sí',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-            if (!response.ok) throw new Error('Error al eliminar comentario');
-            loadComentarios();
-          } catch (error) {
-            console.log(error);
-            Alert.alert('Error', 'No se pudo eliminar el comentario');
+  const eliminarComentario = (id) => {
+    Alert.alert(
+      'Eliminar Comentario',
+      '¿Deseas eliminar este comentario?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sí',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await fetch(
+                `${API_URL}/api/comentarios/${id}`,
+                { method: 'DELETE' }
+              );
+              if (!response.ok) throw new Error();
+              loadComentarios();
+            } catch (error) {
+              console.log(error);
+              Alert.alert('Error', 'No se pudo eliminar el comentario');
+            }
           }
         }
-      }
-    ]);
+      ]
+    );
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
 
-      {/* ✅ Barra de búsqueda */}
+      {/* Barra de búsqueda */}
       <View style={styles.searchBox}>
         <TextInput
           style={styles.searchInput}
@@ -95,14 +101,30 @@ export default function AdminComentariosScreen() {
         contentContainerStyle={styles.container}
         data={filteredComentarios}
         keyExtractor={(item) => item._id}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ccff34" colors={['#ccff34']} />}
-        ListEmptyComponent={<Text style={styles.emptyText}>No hay comentarios coincidentes</Text>}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#ccff34"
+            colors={['#ccff34']}
+          />
+        }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>
+            No hay comentarios coincidentes
+          </Text>
+        }
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.usuario}>{item.usuario}</Text>
-            <Text style={styles.fecha}>{new Date(item.fecha).toLocaleString()}</Text>
+            <Text style={styles.fecha}>
+              {new Date(item.fecha).toLocaleString()}
+            </Text>
             <Text style={styles.mensaje}>{item.mensaje}</Text>
-            <TouchableOpacity style={styles.eliminarBoton} onPress={() => eliminarComentario(item._id)}>
+            <TouchableOpacity
+              style={styles.eliminarBoton}
+              onPress={() => eliminarComentario(item._id)}
+            >
               <Text style={styles.botonTexto}>Eliminar</Text>
             </TouchableOpacity>
           </View>
@@ -116,14 +138,15 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#000000ff',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 0,
+    paddingTop: Platform.OS === 'android'
+      ? StatusBar.currentHeight + 10
+      : 0,
   },
   container: {
     padding: 20,
     paddingBottom: 100,
   },
 
-  // ✅ Barra de búsqueda estilo uniforme
   searchBox: {
     paddingHorizontal: 20,
     paddingBottom: 10,

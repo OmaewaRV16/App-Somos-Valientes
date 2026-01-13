@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ScrollView
+} from 'react-native';
+
+// ✅ URL PRODUCCIÓN
+const API_URL = "https://app-somos-valientes-production.up.railway.app";
 
 export default function EditarAccion({ route, navigation }) {
   const { accion } = route.params || {};
@@ -14,11 +25,14 @@ export default function EditarAccion({ route, navigation }) {
     }
 
     try {
-      const res = await fetch(`http://192.168.2.205:3000/api/acciones/${accion._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titulo, descripcion }),
-      });
+      const res = await fetch(
+        `${API_URL}/api/acciones/${accion._id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ titulo, descripcion }),
+        }
+      );
 
       if (!res.ok) throw new Error('Error al actualizar la acción');
 
@@ -63,9 +77,30 @@ export default function EditarAccion({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { padding: 20, backgroundColor: '#f5f5f5', flexGrow: 1 },
-  titulo: { fontSize: 28, fontWeight: 'bold', marginBottom: 20, color: '#ff6f00', textAlign: 'center' },
+  titulo: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#ff6f00',
+    textAlign: 'center'
+  },
   label: { fontSize: 16, marginBottom: 5, color: '#333' },
-  input: { backgroundColor: '#fff', borderRadius: 8, padding: 12, fontSize: 16, marginBottom: 15, borderWidth: 1, borderColor: '#ddd' },
-  boton: { backgroundColor: '#ff6f00', paddingVertical: 15, borderRadius: 8, alignItems: 'center', marginTop: 10, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 5, elevation: 3 },
+  input: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#ddd'
+  },
+  boton: {
+    backgroundColor: '#ff6f00',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+    elevation: 3
+  },
   botonTexto: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
 });

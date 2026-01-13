@@ -12,6 +12,9 @@ import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// ✅ URL PRODUCCIÓN (Railway)
+const API_URL = "https://app-somos-valientes-production.up.railway.app";
+
 export default function LoginScreen({ navigation }) {
   const [celular, setCelular] = useState('');
   const [password, setPassword] = useState('');
@@ -26,18 +29,21 @@ export default function LoginScreen({ navigation }) {
       Alert.alert('Error', 'Por favor ingresa número de celular y contraseña');
       return;
     }
+
     if (celular.length < 10) {
       Alert.alert('Error', 'El número celular debe tener 10 dígitos');
       return;
     }
 
     try {
-      const response = await fetch('http://192.168.2.205:3000/api/login', {
+      const response = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ celular, password }),
       });
+
       const data = await response.json();
+
       if (!response.ok) {
         Alert.alert('Error', data.message || 'Número de celular o contraseña incorrectos');
         return;
@@ -48,17 +54,30 @@ export default function LoginScreen({ navigation }) {
 
       switch (user.rol) {
         case 'participante':
-          navigation.reset({ index: 0, routes: [{ name: 'ParticipantHome', params: { user } }] });
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'ParticipantHome', params: { user } }],
+          });
           break;
+
         case 'padrino':
-          navigation.reset({ index: 0, routes: [{ name: 'SponsorHome', params: { user } }] });
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'SponsorHome', params: { user } }],
+          });
           break;
+
         case 'admin':
-          navigation.reset({ index: 0, routes: [{ name: 'AdminHome', params: { user } }] });
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'AdminHome', params: { user } }],
+          });
           break;
+
         default:
           Alert.alert('Error', 'Rol no reconocido');
       }
+
     } catch (error) {
       console.log(error);
       Alert.alert('Error', 'No se pudo conectar con el servidor');
@@ -71,7 +90,7 @@ export default function LoginScreen({ navigation }) {
         styles.scrollContainer,
         { paddingBottom: Platform.OS === 'android' ? 120 : 80 },
       ]}
-      enableOnAndroid={true}
+      enableOnAndroid
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.headerContainer}>
@@ -92,10 +111,10 @@ export default function LoginScreen({ navigation }) {
           keyboardType="phone-pad"
           maxLength={10}
           style={styles.input}
-          outlineColor="#333" // borde del input
-          textColor="#000" // texto que escribe el usuario
+          outlineColor="#333"
+          textColor="#000"
           placeholder="Ingresa tu número celular"
-          placeholderTextColor="#999" // color del placeholder
+          placeholderTextColor="#999"
           left={<TextInput.Icon icon="phone" />}
         />
 
@@ -134,7 +153,7 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    backgroundColor: '#000', // fondo negro
+    backgroundColor: '#000',
     justifyContent: 'center',
     paddingVertical: 20,
   },
@@ -150,39 +169,35 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ccff34', // verde brillante
+    color: '#ccff34',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#ccff3495', // verde más suave
+    color: '#ccff3495',
     textAlign: 'center',
     marginTop: 5,
   },
   formContainer: {
     marginHorizontal: 20,
-    backgroundColor: '#ccff34', // verde
+    backgroundColor: '#ccff34',
     borderRadius: 20,
     padding: 25,
     elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
   },
   input: {
     marginBottom: 20,
-    backgroundColor: '#fff', // fondo blanco para que contraste
+    backgroundColor: '#fff',
     borderRadius: 10,
   },
   button: {
     marginTop: 5,
-    backgroundColor: '#000', // botón negro
+    backgroundColor: '#000',
     paddingVertical: 10,
     borderRadius: 15,
   },
   buttonLabel: {
-    color: '#ccff34', // texto verde brillante
+    color: '#ccff34',
     fontWeight: 'bold',
     fontSize: 16,
   },

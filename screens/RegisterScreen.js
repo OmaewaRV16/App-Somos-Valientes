@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard
+} from 'react-native';
 import { TextInput, Button, RadioButton, HelperText } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// ✅ BACKEND EN RAILWAY (PRODUCCIÓN)
+const API_URL = "https://app-somos-valientes-production.up.railway.app";
 
 export default function RegisterScreen({ navigation }) {
   const [apellidoP, setApellidoP] = useState('');
@@ -34,7 +45,16 @@ export default function RegisterScreen({ navigation }) {
   };
 
   const handleRegister = async () => {
-    if (!apellidoP || !apellidoM || !nombres || !fechaNac || !direccion || !celular || !password || !confirmPassword) {
+    if (
+      !apellidoP ||
+      !apellidoM ||
+      !nombres ||
+      !fechaNac ||
+      !direccion ||
+      !celular ||
+      !password ||
+      !confirmPassword
+    ) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
@@ -50,7 +70,7 @@ export default function RegisterScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch("http://192.168.2.205:3000/api/register", {
+      const response = await fetch(`${API_URL}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -72,6 +92,7 @@ export default function RegisterScreen({ navigation }) {
         return;
       }
 
+      // 👉 En pruebas se manda el código, luego será por SMS
       const codigo = data.codigo;
       navigation.navigate("VerificarScreen", { celular, codigo });
 
@@ -89,14 +110,11 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <LinearGradient
-        colors={['#000', '#1a1a1a', '#000']}
-        style={styles.background}
-      >
+      <LinearGradient colors={['#000', '#1a1a1a', '#000']} style={styles.background}>
         <KeyboardAwareScrollView
           contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + 20 }]}
           keyboardShouldPersistTaps="handled"
-          enableOnAndroid={true}
+          enableOnAndroid
         >
           <View style={styles.formCard}>
             <Text style={styles.title}>Crear Cuenta</Text>
@@ -136,6 +154,7 @@ export default function RegisterScreen({ navigation }) {
               secureTextEntry
               style={styles.input}
             />
+
             <HelperText type={getPasswordStrength(password) === 'Mala' ? 'error' : 'info'}>
               {password ? `Contraseña ${getPasswordStrength(password)}` : ''}
             </HelperText>
@@ -161,7 +180,12 @@ export default function RegisterScreen({ navigation }) {
               </View>
             </RadioButton.Group>
 
-            <Button mode="contained" onPress={handleRegister} style={styles.button} labelStyle={styles.buttonLabel}>
+            <Button
+              mode="contained"
+              onPress={handleRegister}
+              style={styles.button}
+              labelStyle={styles.buttonLabel}
+            >
               Registrarse
             </Button>
           </View>

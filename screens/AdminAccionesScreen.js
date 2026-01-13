@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Text,
   FlatList,
@@ -14,6 +14,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
+const API_URL = "https://app-somos-valientes-production.up.railway.app";
+
 export default function AdminAccionesScreen({ navigation }) {
   const [acciones, setAcciones] = useState([]);
   const [filteredAcciones, setFilteredAcciones] = useState([]);
@@ -22,7 +24,8 @@ export default function AdminAccionesScreen({ navigation }) {
 
   const loadAcciones = async () => {
     try {
-      const response = await fetch('http://192.168.2.205:3000/api/acciones');
+      const response = await fetch(`${API_URL}/api/acciones`);
+      if (!response.ok) throw new Error();
       const data = await response.json();
       setAcciones(data);
       setFilteredAcciones(data);
@@ -68,9 +71,10 @@ export default function AdminAccionesScreen({ navigation }) {
           style: 'destructive',
           onPress: async () => {
             try {
-              await fetch(`http://192.168.2.205:3000/api/acciones/${id}`, {
+              const res = await fetch(`${API_URL}/api/acciones/${id}`, {
                 method: 'DELETE'
               });
+              if (!res.ok) throw new Error();
               loadAcciones();
             } catch (error) {
               console.log(error);
@@ -82,13 +86,15 @@ export default function AdminAccionesScreen({ navigation }) {
     );
   };
 
-  const editarAccion = (accion) => navigation.navigate('EditarAccion', { accion });
+  const editarAccion = (accion) =>
+    navigation.navigate('EditarAccion', { accion });
+
   const crearAccion = () => navigation.navigate('CrearAccion');
 
   return (
     <SafeAreaView style={styles.safeArea}>
 
-      {/* ✅ Barra de búsqueda arriba del botón */}
+      {/* Barra de búsqueda */}
       <View style={styles.searchBox}>
         <TextInput
           style={styles.searchInput}
@@ -99,7 +105,7 @@ export default function AdminAccionesScreen({ navigation }) {
         />
       </View>
 
-      {/* ✅ Botón Crear */}
+      {/* Botón Crear */}
       <View style={styles.botonContainer}>
         <TouchableOpacity style={styles.boton} onPress={crearAccion}>
           <Text style={styles.botonTexto}>Crear Nueva Acción</Text>
@@ -126,10 +132,16 @@ export default function AdminAccionesScreen({ navigation }) {
             <Text style={styles.titulo}>{item.titulo}</Text>
             <Text>{item.descripcion}</Text>
             <View style={styles.botones}>
-              <TouchableOpacity style={styles.editarBoton} onPress={() => editarAccion(item)}>
+              <TouchableOpacity
+                style={styles.editarBoton}
+                onPress={() => editarAccion(item)}
+              >
                 <Text style={styles.botonTextoEditar}>Editar</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.eliminarBoton} onPress={() => eliminarAccion(item._id)}>
+              <TouchableOpacity
+                style={styles.eliminarBoton}
+                onPress={() => eliminarAccion(item._id)}
+              >
                 <Text style={styles.botonTextoEliminar}>Eliminar</Text>
               </TouchableOpacity>
             </View>
@@ -144,7 +156,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#000000ff',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 0,
+    paddingTop: Platform.OS === 'android'
+      ? StatusBar.currentHeight + 10
+      : 0,
   },
   container: { padding: 30, paddingBottom: 100 },
 
@@ -158,7 +172,6 @@ const styles = StyleSheet.create({
   },
   botonTexto: { color: '#000000ff', fontSize: 18, fontWeight: 'bold' },
 
-  // ✅ Barra de búsqueda estilo Cupones
   searchBox: {
     paddingHorizontal: 20,
     paddingBottom: 15,
@@ -186,7 +199,8 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: 'bold',
     marginBottom: 5,
-    color: '#000' },
+    color: '#000'
+  },
   botones: {
     flexDirection: 'row',
     justifyContent: 'space-between',

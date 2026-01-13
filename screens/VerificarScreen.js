@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,37 +14,21 @@ import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// ✅ BACKEND EN RAILWAY
+const API_URL = "https://app-somos-valientes-production.up.railway.app";
+
 export default function VerificarScreen({ route, navigation }) {
   const { celular } = route.params;
   const [codigo, setCodigo] = useState('');
-  const [codigoBD, setCodigoBD] = useState(null);
-
-  useEffect(() => {
-    const fetchCodigo = async () => {
-      try {
-        const response = await fetch(`http://192.168.2.205:3000/api/users`);
-        const data = await response.json();
-
-        const usuario = data.find(u => u.celular === celular);
-        if (usuario) {
-          setCodigoBD(usuario.codigo);
-        }
-      } catch (error) {
-        console.log('Error obteniendo código:', error);
-      }
-    };
-
-    fetchCodigo();
-  }, []);
 
   const handleVerificar = async () => {
-    if (!codigo) {
-      Alert.alert('Error', 'Ingresa el código de verificación');
+    if (!codigo || codigo.length < 6) {
+      Alert.alert('Error', 'Ingresa el código de 6 dígitos');
       return;
     }
 
     try {
-      const response = await fetch('http://192.168.2.205:3000/api/verificar', {
+      const response = await fetch(`${API_URL}/api/verificar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ celular, codigo }),
@@ -74,7 +58,7 @@ export default function VerificarScreen({ route, navigation }) {
             styles.scrollContainer,
             { paddingBottom: Platform.OS === 'android' ? 120 : 80 },
           ]}
-          enableOnAndroid={true}
+          enableOnAndroid
           keyboardShouldPersistTaps="handled"
         >
           {/* Logo y título */}
@@ -88,10 +72,10 @@ export default function VerificarScreen({ route, navigation }) {
             <Text style={styles.subtitle}>Ingresa el código recibido</Text>
           </View>
 
-          {/* Tarjeta de verificación */}
+          {/* Tarjeta */}
           <View style={styles.cardContainer}>
             <TextInput
-              label="Código"
+              label="Código de verificación"
               value={codigo}
               onChangeText={setCodigo}
               keyboardType="number-pad"
@@ -103,22 +87,17 @@ export default function VerificarScreen({ route, navigation }) {
               placeholderTextColor="#999"
             />
 
-            {/* Mostrar código de la BD (solo desarrollo) */}
-            {codigoBD && (
-              <Text style={styles.simulatedCode}>Código actual en BD: {codigoBD}</Text>
-            )}
-
             <Button
               mode="contained"
               onPress={handleVerificar}
               style={styles.button}
               labelStyle={styles.buttonLabel}
             >
-              Verificar
+              Verificar cuenta
             </Button>
 
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.backText}>Volver a inicio de sesión</Text>
+            <TouchableOpacity onPress={() => navigation.replace('Login')}>
+              <Text style={styles.backText}>Volver a iniciar sesión</Text>
             </TouchableOpacity>
           </View>
         </KeyboardAwareScrollView>
@@ -170,12 +149,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: '#fff',
     borderRadius: 10,
-  },
-  simulatedCode: {
-    fontSize: 16,
-    marginBottom: 15,
-    color: 'red',
-    textAlign: 'center',
   },
   button: {
     marginTop: 5,
