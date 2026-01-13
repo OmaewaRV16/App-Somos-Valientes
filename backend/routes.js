@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
-const User = require("../models/User");
+const User = require("./models/User");
 
-// ==================
+// =====================
 // REGISTRO
-// ==================
+// =====================
 router.post("/register", async (req, res) => {
   const {
     apellidoP,
@@ -59,7 +59,7 @@ router.post("/register", async (req, res) => {
 
     res.status(201).json({
       message: "Usuario registrado. Falta verificar cuenta.",
-      codigo // solo para pruebas
+      codigo // SOLO para pruebas
     });
   } catch (error) {
     console.error("❌ Register error:", error);
@@ -67,9 +67,9 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// ==================
+// =====================
 // VERIFICAR CUENTA
-// ==================
+// =====================
 router.post("/verificar", async (req, res) => {
   const { celular, codigo } = req.body;
 
@@ -96,9 +96,9 @@ router.post("/verificar", async (req, res) => {
   }
 });
 
-// ==================
+// =====================
 // LOGIN
-// ==================
+// =====================
 router.post("/login", async (req, res) => {
   const { celular, password } = req.body;
 
@@ -131,9 +131,9 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ==================
+// =====================
 // USUARIOS
-// ==================
+// =====================
 router.get("/users", async (req, res) => {
   try {
     const users = await User.find({}, "-password");
