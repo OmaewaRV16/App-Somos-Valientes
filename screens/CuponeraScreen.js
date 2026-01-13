@@ -12,7 +12,7 @@ export default function CuponeraScreen({ route, navigation }) {
 
   const fetchCupones = useCallback(async () => {
     try {
-      const resp = await fetch("http://192.168.2.205:3000/api/cupones");
+      const resp = await fetch("https://app-somos-valientes-production.up.railway.app/api/cupones");
       const data = await resp.json();
 
       if (!resp.ok) {
