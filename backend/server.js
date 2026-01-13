@@ -15,33 +15,33 @@ const bcrypt = require("bcrypt");
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json());
 
-// Conectar a MongoDB (Atlas)
+// Conectar a MongoDB
 connectDB();
 
-// 🔹 Endpoint de prueba (OBLIGATORIO para Railway)
+// Health check (Railway)
 app.get("/ping", (req, res) => {
   res.json({ ok: true, status: "Sociedad Valiente backend activo" });
 });
 
-// 🔹 Rutas de usuarios (registro / login / verificación)
-app.use("/api", userRoutes);
-
-// 🔹 Rutas generales
-app.use("/api", routes);
-
-// 🔹 Rutas de cupones
+// Rutas específicas primero
 app.use("/api/cupones", cuponesRoutes);
-
-// 🔹 Rutas de acciones
 app.use("/api/acciones", accionesRoutes);
-
-// 🔹 Rutas de comentarios
 app.use("/api/comentarios", comentariosRoutes);
 
-// 🔹 Crear admin automáticamente si no existe
+// Auth / users
+app.use("/api", userRoutes);
+
+// Rutas generales al final
+app.use("/api", routes);
+
+// Crear admin
 const crearAdmin = async () => {
   try {
     const existeAdmin = await User.findOne({ rol: "admin" });
@@ -75,11 +75,13 @@ const crearAdmin = async () => {
   }
 };
 
-crearAdmin();
+connectDB().then(() => {
+  setTimeout(crearAdmin, 1000);
+});
 
-// 🔹 Puerto dinámico para Railway (CLAVE)
+
+// Puerto Railway
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
 });
