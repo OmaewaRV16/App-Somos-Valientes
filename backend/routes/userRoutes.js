@@ -1,32 +1,29 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs'); // 🔹 bcrypt para encriptar
+const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
-// 🔹 Registro de usuario con código simulado
+// ============================
+// REGISTRO
+// ============================
 router.post('/register', async (req, res) => {
   const { apellidoP, apellidoM, nombres, fechaNac, direccion, celular, password, rol } = req.body;
 
-  // Validar campos obligatorios
   if (!apellidoP || !apellidoM || !nombres || !fechaNac || !direccion || !celular || !password || !rol) {
     return res.status(400).json({ message: "Faltan datos obligatorios" });
   }
 
   try {
-    // Verificar si el número ya existe
     const existingUser = await User.findOne({ celular });
     if (existingUser) {
       return res.status(400).json({ message: "Este número de celular ya está registrado" });
     }
 
-    // 🔹 Encriptar contraseña
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 🔹 Generar código simulado de verificación
     const codigoSimulado = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Crear usuario
     const newUser = new User({
       apellidoP,
       apellidoM,
@@ -43,8 +40,8 @@ router.post('/register', async (req, res) => {
     await newUser.save();
 
     res.status(201).json({
-      message: 'Usuario registrado con éxito (simulado)',
-      codigoSimulado // 🔹 Enviamos el código al frontend para VerificarScreen
+      message: 'Usuario registrado con éxito',
+      codigoSimulado
     });
 
   } catch (error) {
@@ -53,7 +50,9 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// 🔹 Verificar código de cuenta
+// ============================
+// VERIFICAR CUENTA
+// ============================
 router.post('/verificar', async (req, res) => {
   const { celular, codigo } = req.body;
 
@@ -77,7 +76,9 @@ router.post('/verificar', async (req, res) => {
   }
 });
 
-// 🔹 Login de usuario
+// ============================
+// LOGIN
+// ============================
 router.post('/login', async (req, res) => {
   const { celular, password } = req.body;
 
@@ -89,51 +90,62 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ celular });
     if (!user) return res.status(400).json({ message: "Usuario no encontrado" });
 
-    if (!user.verificado) return res.status(403).json({ message: "Cuenta no verificada. Revisa tu código." });
+    if (!user.verificado) {
+      return res.status(403).json({ message: "Cuenta no verificada" });
+    }
 
-    // 🔹 Verificar contraseña
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Contraseña incorrecta" });
 
-    // Devolver usuario sin contraseña
     const { password: pw, ...userData } = user.toObject();
     res.json({ message: "Login exitoso", user: userData });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error del servidor" });
   }
 });
 
-// 🔹 Obtener todos los usuarios (sin contraseña)
-router.get("/users", async (req, res) => {
+// ============================
+// OBTENER USUARIOS
+// ============================
+router.get('/users', async (req, res) => {
   try {
-    const users = await User.find({}, "-password");
+    const users = await User.find({}, '-password');
     res.json(users);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error del servidor" });
+    res.status(500).json({ message: 'Error del servidor' });
   }
 });
 
-// 🔹 Obtener solo participantes
-// ✅ Obtener SOLO usuarios por rol (padrinos, participantes, admin, etc.)
-router.get("/users/rol/:rol", async (req, res) => {
+router.get('/users/rol/:rol', async (req, res) => {
   try {
-    const { rol } = req.params;
+    const users = await User.find({ rol: req.params.rol }, '-password');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error del servidor' });
+  }
+});
 
-    // Buscar por rol, excluyendo contraseña
-    const users = await User.find({ rol }, "-password");
+// ============================
+// 🔥 ELIMINAR CUENTA (LO QUE FALTABA)
+// ============================
+router.delete('/users/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
 
-    if (users.length === 0) {
-      return res.status(404).json({ message: "No hay usuarios con ese rol" });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    res.json(users);
+    await user.deleteOne();
+
+    res.json({ message: 'Cuenta eliminada correctamente' });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error del servidor" });
+    console.error('Error eliminando usuario:', error);
+    res.status(500).json({ message: 'Error al eliminar cuenta' });
   }
 });
-
 
 module.exports = router;

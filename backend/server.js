@@ -3,7 +3,6 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./db");
 
-const routes = require("./routes");
 const cuponesRoutes = require("./routes/cupones");
 const accionesRoutes = require("./routes/acciones");
 const comentariosRoutes = require("./routes/comentarios");
@@ -14,34 +13,42 @@ const bcrypt = require("bcrypt");
 
 const app = express();
 
-// Middlewares
+// ==========================
+// MIDDLEWARES
+// ==========================
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 app.use(express.json());
 
-// Conectar a MongoDB
+// ==========================
+// CONEXIÓN A MONGODB
+// ==========================
 connectDB();
 
-// Health check (Railway)
+// ==========================
+// HEALTH CHECK (Railway)
+// ==========================
 app.get("/ping", (req, res) => {
   res.json({ ok: true, status: "Sociedad Valiente backend activo" });
 });
 
-// Rutas específicas primero
+// ==========================
+// RUTAS
+// ==========================
 app.use("/api/cupones", cuponesRoutes);
 app.use("/api/acciones", accionesRoutes);
 app.use("/api/comentarios", comentariosRoutes);
 
-// Auth / users
+// 🔥 USUARIOS / AUTH (incluye DELETE /api/users/:id)
 app.use("/api", userRoutes);
 
-// Rutas generales al final
-app.use("/api", routes);
-
-// Crear admin
+// ==========================
+// CREAR ADMIN AUTOMÁTICO
+// ==========================
 const crearAdmin = async () => {
   try {
     const existeAdmin = await User.findOne({ rol: "admin" });
@@ -75,12 +82,14 @@ const crearAdmin = async () => {
   }
 };
 
+// Espera a DB antes de crear admin
 connectDB().then(() => {
   setTimeout(crearAdmin, 1000);
 });
 
-
-// Puerto Railway
+// ==========================
+// PUERTO
+// ==========================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);

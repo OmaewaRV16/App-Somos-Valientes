@@ -35,6 +35,10 @@
       "eas": {
         "projectId": "be4a657c-b7f9-4daa-b793-80141d53e52d"
       }
-    }
+    },
+    "plugins": [
+      "expo-font",
+      "@react-native-community/datetimepicker"
+    ]
   }
 }
