@@ -40,79 +40,51 @@ export default function ApoyarScreen({ route }) {
     loadParticipantes();
   }, []);
 
-  const handleApoyar = async (participante) => {
-    const monto = montos[participante._id];
-
-    if (!monto || isNaN(monto) || Number(monto) <= 0) {
-      Alert.alert('Error', 'Ingresa un monto válido');
-      return;
-    }
-
-    try {
-      const resp = await fetch(`${API_URL}/api/apoyos`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          padrino: user._id,          // quien dona
-          participante: participante._id, // quien recibe
-          monto: Number(monto)
-        })
-      });
-
-      if (!resp.ok) throw new Error();
-
-      Alert.alert(
-        'Éxito',
-        `Has apoyado a ${participante.nombres} con $${monto}`
-      );
-
-      setMontos(prev => ({ ...prev, [participante._id]: '' }));
-    } catch (error) {
-      console.log(error);
-      Alert.alert(
-        "Error",
-        "No se pudo registrar el apoyo. Intenta más tarde."
-      );
-    }
-  };
-
   return (
     <SafeAreaView style={styles.safeArea}>
-      <FlatList
-        contentContainerStyle={styles.container}
-        data={participantes}
-        keyExtractor={(item) => item._id}
-        ListEmptyComponent={
-          <Text style={{ color:'#fff', textAlign:'center', marginTop:40 }}>
-            No hay participantes disponibles
-          </Text>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.participante}>
-            <Text style={styles.nombre}>
-              {item.nombres} {item.apellidoP} {item.apellidoM}
-            </Text>
 
-            <TextInput
-              placeholder="Monto de apoyo"
-              placeholderTextColor="#ccff34"
-              keyboardType="numeric"
-              style={styles.input}
-              value={montos[item._id]}
-              onChangeText={text =>
-                setMontos(prev => ({ ...prev, [item._id]: text }))
-              }
-            />
+      {/* ===============================
+          CONTENIDO REAL (DIFUMINADO)
+          =============================== */}
+      <View style={styles.disabledContent}>
+        <FlatList
+          contentContainerStyle={styles.container}
+          data={participantes}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <View style={styles.participante}>
+              <Text style={styles.nombre}>
+                {item.nombres} {item.apellidoP} {item.apellidoM}
+              </Text>
 
-            <TouchableOpacity
-              style={styles.boton}
-              onPress={() => handleApoyar(item)}
-            >
-              <Text style={styles.botonTexto}>Apoyar</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
+              <TextInput
+                placeholder="Monto de apoyo"
+                placeholderTextColor="#aaa"
+                style={styles.input}
+                editable={false}
+              />
+
+              <View style={styles.fakeButton}>
+                <Text style={styles.fakeButtonText}>Apoyar</Text>
+              </View>
+            </View>
+          )}
+        />
+      </View>
+
+      {/* ===============================
+          OVERLAY DIFUMINADO (FAKE BLUR)
+          👉 QUITAR ESTE BLOQUE DESPUÉS
+          =============================== */}
+      <View style={styles.overlay}>
+        <View style={styles.overlayWash} />
+
+        <View style={styles.overlayCard}>
+          <Text style={styles.overlayTitle}>ESTARÁ ACTIVA</Text>
+          <Text style={styles.overlaySubtitle}>PRÓXIMAMENTE</Text>
+        </View>
+      </View>
+
     </SafeAreaView>
   );
 }
@@ -120,43 +92,92 @@ export default function ApoyarScreen({ route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000000ff',
+    backgroundColor: '#000',
   },
+
+  /* CONTENIDO DESACTIVADO */
+  disabledContent: {
+    flex: 1,
+    opacity: 0.25, // 👈 baja contraste (efecto blur)
+  },
+
   container: {
     padding: 20,
   },
-  participante:{
-    backgroundColor:'#ccff34',
-    padding:15,
-    borderRadius:8,
-    marginBottom:15,
-    elevation:3,
+
+  participante: {
+    backgroundColor: '#ccff34',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
   },
-  nombre:{
+
+  nombre: {
     textAlign: 'center',
-    fontSize:16,
-    fontWeight:'bold',
-    marginBottom:5,
-    color: '#000000ff'
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#000',
   },
-  input:{
-    backgroundColor: 'black',
-    borderWidth:2,
-    borderColor:'#ccff34',
-    borderRadius:5,
-    padding:8,
-    marginBottom:10,
-    color:'#ccff34'
+
+  input: {
+    backgroundColor: '#000',
+    borderWidth: 2,
+    borderColor: '#ccff34',
+    borderRadius: 6,
+    padding: 8,
+    marginBottom: 10,
+    color: '#ccff34',
   },
-  boton:{
-    backgroundColor:'#000000ff',
-    padding:10,
-    borderRadius:5,
-    alignItems:'center',
-    marginTop:5
+
+  fakeButton: {
+    backgroundColor: '#000',
+    padding: 10,
+    borderRadius: 6,
+    alignItems: 'center',
   },
-  botonTexto:{
-    color:'#ccff34',
-    fontWeight:'bold',
+
+  fakeButtonText: {
+    color: '#ccff34',
+    fontWeight: 'bold',
+  },
+
+  /* ===============================
+     OVERLAY FAKE BLUR
+     =============================== */
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgb(0, 0, 0)', // 👈 oscurece fuerte
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  overlayWash: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.08)', // 👈 efecto blur fake
+  },
+
+  overlayCard: {
+    backgroundColor: '#000',
+    paddingVertical: 30,
+    paddingHorizontal: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#ccff34',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+
+  overlayTitle: {
+    color: '#ccff34',
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+
+  overlaySubtitle: {
+    color: '#fff',
+    fontSize: 16,
+    letterSpacing: 2,
   },
 });

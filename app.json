@@ -3,23 +3,27 @@
     "name": "App-Somos-Valientes",
     "slug": "App-Somos-Valientes",
     "scheme": "appsomosvalientes",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+
     "splash": {
       "image": "./assets/logo-sv.png",
       "resizeMode": "contain",
       "backgroundColor": "#ccff34"
     },
+
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.AppSomosValientes",
+      "buildNumber": "2",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
+
     "android": {
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
@@ -29,14 +33,17 @@
       "edgeToEdgeEnabled": true,
       "package": "com.anonymous.AppSomosValientes"
     },
+
     "web": {
       "favicon": "./assets/favicon.png"
     },
+
     "extra": {
       "eas": {
         "projectId": "be4a657c-b7f9-4daa-b793-80141d53e52d"
       }
     },
+
     "plugins": [
       "expo-font",
       "@react-native-community/datetimepicker"
