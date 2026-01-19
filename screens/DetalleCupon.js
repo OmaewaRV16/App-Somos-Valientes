@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 
-// ✅ URL PRODUCCIÓN (Railway)
+// ✅ URL PRODUCCIÓN
 const API_URL = "https://app-somos-valientes-production.up.railway.app";
 
 export default function DetalleCupon({ route, navigation }) {
   const { cupon, user, onCanjear } = route.params;
 
   const [canjeado, setCanjeado] = useState(
-    cupon.usados?.includes(user.celular) ?? false
+    cupon?.usado && cupon.usado[user.celular] === true
   );
-  const [mostrarCodigo, setMostrarCodigo] = useState(false);
+  const [mostrarCodigo, setMostrarCodigo] = useState(
+    cupon?.usado && cupon.usado[user.celular] === true
+  );
 
   const handleCanjear = async () => {
     if (canjeado) return;
@@ -28,10 +30,7 @@ export default function DetalleCupon({ route, navigation }) {
       const data = await resp.json();
 
       if (!resp.ok) {
-        Alert.alert(
-          "Error",
-          data.message || "No se pudo canjear el cupón"
-        );
+        Alert.alert("Error", data.message || "No se pudo canjear el cupón");
         return;
       }
 
@@ -43,10 +42,7 @@ export default function DetalleCupon({ route, navigation }) {
 
     } catch (error) {
       console.log(error);
-      Alert.alert(
-        "Error",
-        "No se pudo conectar con el servidor"
-      );
+      Alert.alert("Error", "No se pudo conectar con el servidor");
     }
   };
 
@@ -58,7 +54,7 @@ export default function DetalleCupon({ route, navigation }) {
 
         {mostrarCodigo && (
           <View style={styles.codigoContainer}>
-            <Text style={styles.codigoLabel}>Tu Código:</Text>
+            <Text style={styles.codigoLabel}>Tu Código</Text>
             <Text style={styles.codigoValor}>{cupon.codigo}</Text>
           </View>
         )}
@@ -74,7 +70,7 @@ export default function DetalleCupon({ route, navigation }) {
 
         {canjeado && !mostrarCodigo && (
           <Text style={styles.yaCanjeado}>
-            ¡Este cupón ya fue canjeado!
+            Este cupón ya fue canjeado
           </Text>
         )}
 
@@ -111,7 +107,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
-    color: '#000000'
+    color: '#000'
   },
   descripcion: {
     fontSize: 16,
@@ -131,19 +127,18 @@ const styles = StyleSheet.create({
   },
   codigoLabel: { fontSize:16, color:'#777', marginBottom:5 },
   codigoValor: {
-    fontSize:24,
+    fontSize:28,
     fontWeight:'bold',
-    color:'#ccff34'
+    color:'#000'
   },
   botonCanjear: {
-    backgroundColor:'#ccff34',
+    backgroundColor:'#000',
     paddingVertical:15,
     paddingHorizontal:50,
     borderRadius:12,
-    marginBottom:15,
-    elevation:4
+    marginBottom:15
   },
-  botonTexto: { color:'#000', fontSize:16, fontWeight:'bold' },
+  botonTexto: { color:'#ccff34', fontSize:16, fontWeight:'bold' },
   yaCanjeado: {
     fontSize:16,
     color:'#d32f2f',
@@ -156,8 +151,8 @@ const styles = StyleSheet.create({
     paddingHorizontal:35,
     borderRadius:12,
     borderWidth:1,
-    borderColor:'#000000',
-    backgroundColor:'#000000'
+    borderColor:'#000',
+    backgroundColor:'#000'
   },
   botonCerrarTexto: { fontSize:16, color:'#ccff34' },
 });

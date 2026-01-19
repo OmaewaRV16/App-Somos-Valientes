@@ -6,11 +6,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ScrollView
+  ScrollView,
+  Image
 } from 'react-native';
 
 // ✅ URL PRODUCCIÓN
-const API_URL = "https://app-somos-valientes-production.up.railway.app";
+const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function EditarCupon({ route, navigation }) {
   const { cupon } = route.params || {};
@@ -18,20 +19,32 @@ export default function EditarCupon({ route, navigation }) {
   const [nombre, setNombre] = useState(cupon?.nombre || '');
   const [descripcion, setDescripcion] = useState(cupon?.descripcion || '');
   const [codigo, setCodigo] = useState(cupon?.codigo || '');
+  const [logo, setLogo] = useState(
+    cupon?.logo || cupon?.logoUrl || cupon?.imagen || ''
+  );
 
   const guardarCambios = async () => {
-    if (!nombre || !descripcion || !codigo) {
+    if (!nombre.trim() || !descripcion.trim() || !codigo.trim()) {
       Alert.alert('Error', 'Completa todos los campos');
       return;
     }
 
     try {
+      const payload = {
+        nombre: nombre.trim(),
+        descripcion: descripcion.trim(),
+        codigo: codigo.trim(),
+        logo: logo.trim(),
+        logoUrl: logo.trim(),
+        imagen: logo.trim(),
+      };
+
       const res = await fetch(
         `${API_URL}/api/cupones/${cupon._id}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nombre, descripcion, codigo }),
+          body: JSON.stringify(payload),
         }
       );
 
@@ -49,6 +62,17 @@ export default function EditarCupon({ route, navigation }) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.titulo}>Editar Cupón</Text>
+
+      {/* PREVIEW LOGO */}
+      <View style={styles.logoContainer}>
+        {logo ? (
+          <Image source={{ uri: logo }} style={styles.logo} />
+        ) : (
+          <View style={styles.logoPlaceholder}>
+            <Text style={styles.logoPlaceholderText}>SV</Text>
+          </View>
+        )}
+      </View>
 
       <Text style={styles.label}>Nombre</Text>
       <TextInput
@@ -76,6 +100,19 @@ export default function EditarCupon({ route, navigation }) {
         style={styles.input}
         placeholder="Código del cupón"
         placeholderTextColor="#999"
+        autoCapitalize="characters"
+      />
+
+      <Text style={styles.label}>URL del logo</Text>
+      <TextInput
+        value={logo}
+        onChangeText={setLogo}
+        style={styles.input}
+        placeholder="https://..."
+        placeholderTextColor="#999"
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="url"
       />
 
       <TouchableOpacity style={styles.boton} onPress={guardarCambios}>
@@ -86,15 +123,52 @@ export default function EditarCupon({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: '#f5f5f5', flexGrow: 1 },
+  container: {
+    padding: 20,
+    backgroundColor: '#000000',
+    flexGrow: 1,
+  },
   titulo: {
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#000000ff',
-    textAlign: 'center'
+    color: '#ccff34',
+    textAlign: 'center',
   },
-  label: { fontSize: 16, marginBottom: 5, color: '#333' },
+
+  /* LOGO */
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    borderRadius: 100,
+    borderColor: '#ccff34',
+    borderWidth: 5,
+    backgroundColor: '#fff',
+  },
+  logoPlaceholder: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoPlaceholderText: {
+    color: '#ccff34',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+
+  label: {
+    fontSize: 20,
+    marginBottom: 5,
+    color: '#ccff34',
+    fontWeight: 'bold',
+  },
   input: {
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -102,19 +176,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#ddd'
+    borderColor: '#ddd',
   },
+
   boton: {
     backgroundColor: '#ccff34',
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
-    elevation: 3
+    elevation: 3,
   },
   botonTexto: {
     color: '#000000ff',
     fontSize: 18,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
 });

@@ -1,25 +1,26 @@
 import React, { useState, useCallback } from 'react';
-import { 
-  Text, 
-  FlatList, 
-  TouchableOpacity, 
-  StyleSheet, 
-  View, 
-  Alert, 
-  StatusBar, 
+import {
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  View,
+  Alert,
+  StatusBar,
   Platform,
-  TextInput 
+  TextInput,
+  Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
 // ✅ URL PRODUCCIÓN (Railway)
-const API_URL = "https://app-somos-valientes-production.up.railway.app";
+const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function AdminCuponesScreen({ navigation }) {
   const [cupones, setCupones] = useState([]);
   const [filtered, setFiltered] = useState([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
 
   const loadCupones = async () => {
     try {
@@ -84,9 +85,54 @@ export default function AdminCuponesScreen({ navigation }) {
     setFiltered(filtro);
   };
 
+  const renderItem = ({ item }) => {
+    const logoUrl = item.logo || item.logoUrl || item.imagen;
+
+    return (
+      <View style={styles.card}>
+        {/* FILA SUPERIOR */}
+        <View style={styles.row}>
+          {/* LOGO */}
+          {logoUrl ? (
+            <Image source={{ uri: logoUrl }} style={styles.logo} />
+          ) : (
+            <View style={styles.logoPlaceholder}>
+              <Text style={styles.logoPlaceholderText}>SV</Text>
+            </View>
+          )}
+
+          {/* INFO */}
+          <View style={styles.info}>
+            <Text style={styles.titulo}>{item.nombre}</Text>
+            <Text style={styles.descripcion} numberOfLines={2}>
+              {item.descripcion}
+            </Text>
+            <Text style={styles.codigo}>{item.codigo}</Text>
+          </View>
+        </View>
+
+        {/* BOTONES */}
+        <View style={styles.botones}>
+          <TouchableOpacity
+            style={styles.editarBoton}
+            onPress={() => editarCupon(item)}
+          >
+            <Text style={styles.botonTextoEditar}>Editar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.eliminarBoton}
+            onPress={() => eliminarCupon(item._id)}
+          >
+            <Text style={styles.botonTextoElimar}>Eliminar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
-
       {/* Barra de búsqueda */}
       <View style={styles.searchBox}>
         <TextInput
@@ -108,29 +154,7 @@ export default function AdminCuponesScreen({ navigation }) {
         data={filtered}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.container}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.titulo}>{item.nombre}</Text>
-            <Text>{item.descripcion}</Text>
-            <Text style={{ fontWeight:'bold' }}>{item.codigo}</Text>
-
-            <View style={styles.botones}>
-              <TouchableOpacity
-                style={styles.editarBoton}
-                onPress={() => editarCupon(item)}
-              >
-                <Text style={styles.botonTextoEditar}>Editar</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.eliminarBoton}
-                onPress={() => eliminarCupon(item._id)}
-              >
-                <Text style={styles.botonTextoElimar}>Eliminar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+        renderItem={renderItem}
       />
     </SafeAreaView>
   );
@@ -140,11 +164,13 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#000000ff',
-    paddingTop: Platform.OS === 'android'
-      ? StatusBar.currentHeight + 10
-      : 0,
+    paddingTop:
+      Platform.OS === 'android'
+        ? StatusBar.currentHeight + 10
+        : 0,
   },
-  container: { padding: 30, paddingBottom: 100 },
+
+  container: { padding: 20, paddingBottom: 100 },
 
   searchBox: {
     paddingHorizontal: 20,
@@ -162,55 +188,109 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  botonContainer: { paddingHorizontal: 30, marginBottom: 20, marginTop: 10 },
+  botonContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 10,
+    marginTop: 5,
+  },
 
   boton: {
     backgroundColor: '#ccff34',
-    paddingVertical: 18,
+    paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
-    elevation: 4,
   },
 
-  botonTexto: { color: '#000000ff', fontSize: 18, fontWeight: 'bold' },
+  botonTexto: {
+    color: '#000000ff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 
+  /* CARD */
   card: {
     backgroundColor: '#ccff34',
-    padding: 30,
-    borderRadius: 8,
+    padding: 18,
+    borderRadius: 14,
     marginBottom: 15,
     elevation: 3,
   },
 
-  titulo: { fontSize: 25, fontWeight: 'bold', marginBottom: 5 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 
+  /* LOGO */
+  logo: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#fff',
+    marginRight: 15,
+  },
+  logoPlaceholder: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#000',
+    marginRight: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoPlaceholderText: {
+    color: '#ccff34',
+    fontWeight: 'bold',
+  },
+
+  /* INFO */
+  info: {
+    flex: 1,
+  },
+  titulo: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  descripcion: {
+    fontSize: 14,
+    color: '#0000008b',
+    marginVertical: 4,
+  },
+  codigo: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+
+  /* BOTONES */
   botones: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10
+    marginTop: 12,
   },
 
   editarBoton: {
     backgroundColor: '#ffffff',
     paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 8
+    paddingHorizontal: 18,
+    borderRadius: 10,
   },
   eliminarBoton: {
     backgroundColor: '#000000ff',
     paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 8
+    paddingHorizontal: 18,
+    borderRadius: 10,
   },
 
   botonTextoEditar: {
     color: '#000000ff',
     fontWeight: 'bold',
-    fontSize: 14
+    fontSize: 14,
   },
   botonTextoElimar: {
     color: '#ccff34',
     fontWeight: 'bold',
-    fontSize: 14
-  }
+    fontSize: 14,
+  },
 });
