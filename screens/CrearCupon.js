@@ -16,10 +16,16 @@ export default function CrearCupon({ navigation }) {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [codigo, setCodigo] = useState('');
+  const [logo, setLogo] = useState('');
 
   const guardar = async () => {
-    if (!nombre.trim() || !descripcion.trim() || !codigo.trim()) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
+    if (
+      !nombre.trim() ||
+      !descripcion.trim() ||
+      !codigo.trim() ||
+      !logo.trim()
+    ) {
+      Alert.alert('Error', 'Completa todos los campos, incluido el logo');
       return;
     }
 
@@ -30,7 +36,8 @@ export default function CrearCupon({ navigation }) {
         body: JSON.stringify({
           nombre,
           descripcion,
-          codigo
+          codigo,
+          logo
         }),
       });
 
@@ -54,7 +61,6 @@ export default function CrearCupon({ navigation }) {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.titulo}>Crear Nuevo Cupón</Text>
 
-      <Text style={styles.label}>Nombre</Text>
       <TextInput
         value={nombre}
         onChangeText={setNombre}
@@ -63,7 +69,6 @@ export default function CrearCupon({ navigation }) {
         placeholderTextColor="#999"
       />
 
-      <Text style={styles.label}>Descripción</Text>
       <TextInput
         value={descripcion}
         onChangeText={setDescripcion}
@@ -73,13 +78,22 @@ export default function CrearCupon({ navigation }) {
         multiline
       />
 
-      <Text style={styles.label}>Código</Text>
       <TextInput
         value={codigo}
         onChangeText={setCodigo}
         style={styles.input}
         placeholder="Código del cupón"
         placeholderTextColor="#999"
+      />
+
+      {/* ✅ LOGO DEL NEGOCIO */}
+      <TextInput
+        value={logo}
+        onChangeText={setLogo}
+        style={styles.input}
+        placeholder="URL del logo del negocio"
+        placeholderTextColor="#999"
+        autoCapitalize="none"
       />
 
       <TouchableOpacity style={styles.boton} onPress={guardar}>
@@ -92,20 +106,15 @@ export default function CrearCupon({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#000000',
     flexGrow: 1
   },
   titulo: {
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#000000ff',
+    color: '#ccff34',
     textAlign: 'center'
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 5,
-    color: '#333'
   },
   input: {
     backgroundColor: '#fff',
@@ -125,7 +134,7 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   botonTexto: {
-    color: '#000000ff',
+    color: '#000',
     fontSize: 18,
     fontWeight: 'bold'
   },

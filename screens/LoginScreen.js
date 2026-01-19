@@ -13,11 +13,12 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ✅ URL PRODUCCIÓN (Railway)
-const API_URL = "https://app-somos-valientes-production.up.railway.app";
+const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function LoginScreen({ navigation }) {
   const [celular, setCelular] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // 👈 evita dobles taps
 
   const formatCelular = (value) => {
     const numbers = value.replace(/\D/g, '').slice(0, 10);
@@ -25,6 +26,8 @@ export default function LoginScreen({ navigation }) {
   };
 
   const handleLogin = async () => {
+    if (loading) return;
+
     if (!celular || !password) {
       Alert.alert('Error', 'Por favor ingresa número de celular y contraseña');
       return;
@@ -34,6 +37,8 @@ export default function LoginScreen({ navigation }) {
       Alert.alert('Error', 'El número celular debe tener 10 dígitos');
       return;
     }
+
+    setLoading(true);
 
     try {
       const response = await fetch(`${API_URL}/api/login`, {
@@ -45,42 +50,42 @@ export default function LoginScreen({ navigation }) {
       const data = await response.json();
 
       if (!response.ok) {
-        Alert.alert('Error', data.message || 'Número de celular o contraseña incorrectos');
+        Alert.alert(
+          'Error',
+          data?.message || 'Número de celular o contraseña incorrectos'
+        );
         return;
       }
 
-      await AsyncStorage.setItem('currentUser', JSON.stringify(data.user));
       const user = data.user;
 
-      switch (user.rol) {
-        case 'participante':
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'ParticipantHome', params: { user } }],
-          });
-          break;
+      // ✅ GUARDAR SESIÓN (persistencia)
+      await AsyncStorage.setItem('currentUser', JSON.stringify(user));
 
-        case 'padrino':
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'SponsorHome', params: { user } }],
-          });
-          break;
-
-        case 'admin':
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'AdminHome', params: { user } }],
-          });
-          break;
-
-        default:
-          Alert.alert('Error', 'Rol no reconocido');
+      // ✅ REDIRECCIÓN LIMPIA (sin volver atrás)
+      if (user.rol === 'participante') {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'ParticipantHome' }],
+        });
+      } else if (user.rol === 'padrino') {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'SponsorHome' }],
+        });
+      } else if (user.rol === 'admin') {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'AdminHome' }],
+        });
+      } else {
+        Alert.alert('Error', 'Rol no reconocido');
       }
-
     } catch (error) {
       console.log(error);
       Alert.alert('Error', 'No se pudo conectar con el servidor');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,11 +100,11 @@ export default function LoginScreen({ navigation }) {
     >
       <View style={styles.headerContainer}>
         <Image
-          source={require('../assets/logo.png')}
+          source={require('../assets/logo-verde.png')}
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.title}>Bienvenido a SV</Text>
+        <Text style={styles.title}>Bienvenido a Sociedad Valiente</Text>
         <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
       </View>
 
@@ -136,13 +141,19 @@ export default function LoginScreen({ navigation }) {
           onPress={handleLogin}
           style={styles.button}
           labelStyle={styles.buttonLabel}
+          loading={loading}
+          disabled={loading}
         >
           Iniciar Sesión
         </Button>
 
-        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <TouchableOpacity
+          disabled={loading}
+          onPress={() => navigation.navigate('Register')}
+        >
           <Text style={styles.registerText}>
-            ¿No tienes cuenta? <Text style={styles.registerLink}>Regístrate</Text>
+            ¿No tienes cuenta?{' '}
+            <Text style={styles.registerLink}>Regístrate</Text>
           </Text>
         </TouchableOpacity>
       </View>

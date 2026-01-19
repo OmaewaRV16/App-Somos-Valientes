@@ -7,22 +7,44 @@ const User = require('../models/User');
 // REGISTRO
 // ============================
 router.post('/register', async (req, res) => {
-  const { apellidoP, apellidoM, nombres, fechaNac, direccion, celular, password, rol } = req.body;
+  const {
+    apellidoP,
+    apellidoM,
+    nombres,
+    fechaNac,
+    direccion,
+    celular,
+    password,
+    rol
+  } = req.body;
 
-  if (!apellidoP || !apellidoM || !nombres || !fechaNac || !direccion || !celular || !password || !rol) {
-    return res.status(400).json({ message: "Faltan datos obligatorios" });
+  if (
+    !apellidoP ||
+    !apellidoM ||
+    !nombres ||
+    !fechaNac ||
+    !direccion ||
+    !celular ||
+    !password ||
+    !rol
+  ) {
+    return res.status(400).json({ message: 'Faltan datos obligatorios' });
   }
 
   try {
     const existingUser = await User.findOne({ celular });
     if (existingUser) {
-      return res.status(400).json({ message: "Este número de celular ya está registrado" });
+      return res
+        .status(400)
+        .json({ message: 'Este número de celular ya está registrado' });
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const codigoSimulado = Math.floor(100000 + Math.random() * 900000).toString();
+    const codigoSimulado = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
 
     const newUser = new User({
       apellidoP,
@@ -41,9 +63,8 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({
       message: 'Usuario registrado con éxito',
-      codigoSimulado
+      codigoSimulado // ⚠️ SOLO PARA DESARROLLO
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al registrar usuario' });
@@ -51,7 +72,7 @@ router.post('/register', async (req, res) => {
 });
 
 // ============================
-// VERIFICAR CUENTA
+// 🔐 VERIFICAR CUENTA
 // ============================
 router.post('/verificar', async (req, res) => {
   const { celular, codigo } = req.body;
@@ -59,20 +80,58 @@ router.post('/verificar', async (req, res) => {
   try {
     const user = await User.findOne({ celular });
 
-    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
-    if (user.verificado) return res.json({ message: 'Usuario ya verificado' });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    if (user.verificado) {
+      return res.json({ message: 'Usuario ya verificado' });
+    }
 
     if (user.codigo === codigo) {
       user.verificado = true;
       user.codigo = null;
       await user.save();
-      res.json({ message: 'Cuenta verificada correctamente' });
-    } else {
-      res.status(400).json({ message: 'Código incorrecto' });
+
+      return res.json({ message: 'Cuenta verificada correctamente' });
     }
+
+    return res.status(400).json({ message: 'Código incorrecto' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al verificar' });
+  }
+});
+
+// ============================
+// 🔍 OBTENER CÓDIGO (DEV / TESTFLIGHT)
+// ============================
+router.get('/codigo/:celular', async (req, res) => {
+  try {
+    const { celular } = req.params;
+
+    const user = await User.findOne({ celular });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    if (user.verificado) {
+      return res
+        .status(400)
+        .json({ message: 'Usuario ya verificado' });
+    }
+
+    if (!user.codigo) {
+      return res
+        .status(404)
+        .json({ message: 'Código no disponible' });
+    }
+
+    res.json({ codigo: user.codigo });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al obtener código' });
   }
 });
 
@@ -83,26 +142,35 @@ router.post('/login', async (req, res) => {
   const { celular, password } = req.body;
 
   if (!celular || !password) {
-    return res.status(400).json({ message: "Número de celular y contraseña son obligatorios" });
+    return res
+      .status(400)
+      .json({ message: 'Número de celular y contraseña son obligatorios' });
   }
 
   try {
     const user = await User.findOne({ celular });
-    if (!user) return res.status(400).json({ message: "Usuario no encontrado" });
+    if (!user) {
+      return res.status(400).json({ message: 'Usuario no encontrado' });
+    }
 
     if (!user.verificado) {
-      return res.status(403).json({ message: "Cuenta no verificada" });
+      return res
+        .status(403)
+        .json({ message: 'Cuenta no verificada' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Contraseña incorrecta" });
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ message: 'Contraseña incorrecta' });
+    }
 
     const { password: pw, ...userData } = user.toObject();
-    res.json({ message: "Login exitoso", user: userData });
-
+    res.json({ message: 'Login exitoso', user: userData });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error del servidor" });
+    res.status(500).json({ message: 'Error del servidor' });
   }
 });
 
@@ -128,7 +196,7 @@ router.get('/users/rol/:rol', async (req, res) => {
 });
 
 // ============================
-// 🔥 ELIMINAR CUENTA (LO QUE FALTABA)
+// ❌ ELIMINAR CUENTA (FIX DEFINITIVO)
 // ============================
 router.delete('/users/:id', async (req, res) => {
   try {
@@ -141,7 +209,6 @@ router.delete('/users/:id', async (req, res) => {
     await user.deleteOne();
 
     res.json({ message: 'Cuenta eliminada correctamente' });
-
   } catch (error) {
     console.error('Error eliminando usuario:', error);
     res.status(500).json({ message: 'Error al eliminar cuenta' });

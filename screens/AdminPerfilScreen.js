@@ -185,7 +185,7 @@ export default function AdminPerfilScreen({ navigation }) {
         <Text style={styles.botonEliminarTexto}>Eliminar Cuenta</Text>
       </TouchableOpacity>
 
-      <Text style={styles.version}>v1.0 Beta</Text>
+      {/* <Text style={styles.version}>v1.0 Beta</Text> */}
 
       {/* Modal imagen */}
       <Modal visible={modalVisible} transparent animationType="fade">
@@ -255,13 +255,13 @@ const styles = StyleSheet.create({
   botonTexto: { fontWeight: 'bold', color: '#000' },
 
   botonEliminar: {
-    backgroundColor: '#ff3b30',
+    backgroundColor: '#ccff34',
     paddingVertical: 10,
     borderRadius: 25,
     alignItems: 'center',
     marginTop: 10,
   },
-  botonEliminarTexto: { color: '#fff', fontWeight: 'bold' },
+  botonEliminarTexto: { color: '#000000', fontWeight: 'bold' },
 
   version: { position: 'absolute', bottom: 10, right: 20, color: '#999' },
 

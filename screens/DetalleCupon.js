@@ -95,23 +95,23 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     alignItems:'center',
     padding:15,
-    backgroundColor:'#f0f2f5'
+    backgroundColor:'#000000'
   },
   card: {
     width: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: '#ccff34',
     padding: 30,
     borderRadius: 20,
     elevation: 8,
     alignItems: 'center'
   },
-  canjeadoCard: { backgroundColor: '#f8f8f8' },
+  canjeadoCard: { backgroundColor: '#ccff34' },
   titulo: {
     fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
-    color: '#ccff34'
+    color: '#000000'
   },
   descripcion: {
     fontSize: 16,
@@ -156,7 +156,8 @@ const styles = StyleSheet.create({
     paddingHorizontal:35,
     borderRadius:12,
     borderWidth:1,
-    borderColor:'#ccc'
+    borderColor:'#000000',
+    backgroundColor:'#000000'
   },
-  botonCerrarTexto: { fontSize:16, color:'#333' },
+  botonCerrarTexto: { fontSize:16, color:'#ccff34' },
 });

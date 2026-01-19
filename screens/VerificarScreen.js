@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -15,15 +15,34 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // ✅ BACKEND EN RAILWAY
-const API_URL = "https://app-somos-valientes-production.up.railway.app";
+const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function VerificarScreen({ route, navigation }) {
   const { celular } = route.params;
   const [codigo, setCodigo] = useState('');
+  const [codigoBD, setCodigoBD] = useState(null);
+
+  // 🔹 TRAER CÓDIGO DESDE LA BD (Railway)
+  useEffect(() => {
+    const fetchCodigo = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/codigo/${celular}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          setCodigoBD(data.codigo);
+        }
+      } catch (error) {
+        console.log('Error obteniendo código:', error);
+      }
+    };
+
+    fetchCodigo();
+  }, []);
 
   const handleVerificar = async () => {
     if (!codigo || codigo.length < 6) {
-      Alert.alert('Error', 'Ingresa el código de 6 dígitos');
+      Alert.alert('Error', 'Ingresa el código de verificación');
       return;
     }
 
@@ -75,17 +94,22 @@ export default function VerificarScreen({ route, navigation }) {
           {/* Tarjeta */}
           <View style={styles.cardContainer}>
             <TextInput
-              label="Código de verificación"
+              label="Código"
               value={codigo}
               onChangeText={setCodigo}
               keyboardType="number-pad"
               maxLength={6}
               style={styles.input}
-              outlineColor="#333"
               textColor="#000"
               placeholder="Ingresa tu código"
-              placeholderTextColor="#999"
             />
+
+            {/* 🔥 MOSTRAR CÓDIGO DE LA BD (SIMULADO) */}
+            {codigoBD && (
+              <Text style={styles.simulatedCode}>
+                Código actual en BD: {codigoBD}
+              </Text>
+            )}
 
             <Button
               mode="contained"
@@ -93,7 +117,7 @@ export default function VerificarScreen({ route, navigation }) {
               style={styles.button}
               labelStyle={styles.buttonLabel}
             >
-              Verificar cuenta
+              Verificar
             </Button>
 
             <TouchableOpacity onPress={() => navigation.replace('Login')}>
@@ -106,6 +130,9 @@ export default function VerificarScreen({ route, navigation }) {
   );
 }
 
+// ==========================
+// ESTILOS
+// ==========================
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
@@ -139,16 +166,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccff34',
     borderRadius: 20,
     padding: 25,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
   },
   input: {
     marginBottom: 15,
     backgroundColor: '#fff',
     borderRadius: 10,
+  },
+  simulatedCode: {
+    fontSize: 16,
+    marginBottom: 15,
+    color: 'red',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
   button: {
     marginTop: 5,

@@ -32,7 +32,7 @@ export default function DetalleParticipante({ route, navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#000000',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 0,
   },
   container: {
@@ -49,25 +49,27 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   label: {
+    fontSize: 19,
     fontWeight: 'bold',
     marginTop: 10,
-    color: '#333',
+    color: '#ffffff',
   },
   valor: {
     fontSize: 16,
     marginTop: 2,
-    color: '#555',
+    color: '#ccff34',
   },
   boton: {
     marginTop: 25,
-    backgroundColor: '#000000ff',
+    backgroundColor: '#ccff34',
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 10,
     alignItems: 'center',
   },
   botonTexto: {
-    color: '#ccff34',
+    color: '#000000',
+    
     fontWeight: 'bold',
     fontSize: 16,
   },
