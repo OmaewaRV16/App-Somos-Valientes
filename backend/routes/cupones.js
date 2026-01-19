@@ -103,4 +103,41 @@ router.post("/canjear", async (req, res) => {
   }
 });
 
+// =========================
+// CANJEAR CUPÓN (POR ID EN URL) ✅
+// =========================
+router.patch("/:id/canjear", async (req, res) => {
+  const { celular } = req.body;
+
+  if (!celular) {
+    return res.status(400).json({ message: "Celular requerido" });
+  }
+
+  try {
+    const cupon = await Cupon.findById(req.params.id);
+    if (!cupon) {
+      return res.status(404).json({ message: "Cupón no encontrado" });
+    }
+
+    // Inicializar array si no existe
+    if (!Array.isArray(cupon.usados)) {
+      cupon.usados = [];
+    }
+
+    // Evitar doble canje
+    if (cupon.usados.includes(celular)) {
+      return res.status(400).json({ message: "Cupón ya canjeado" });
+    }
+
+    cupon.usados.push(celular);
+    await cupon.save();
+
+    res.json(cupon);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al canjear cupón" });
+  }
+});
+
+
 module.exports = router;
