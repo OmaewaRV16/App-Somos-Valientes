@@ -9,6 +9,7 @@ import ParticipantTabs from './ParticipantTabs';
 import SponsorTabs from './SponsorTabs';
 import AdminStack from './AdminStack';
 import DetalleCupon from '../screens/DetalleCupon';
+import CuponesPorNegocio from '../screens/CuponesPorNegocio';
 
 const Stack = createNativeStackNavigator();
 
@@ -39,16 +40,39 @@ export default function AuthStack() {
       />
 
       {/* App */}
-      <Stack.Screen name="ParticipantHome" component={ParticipantTabs} />
+      <Stack.Screen
+        name="ParticipantHome"
+        component={ParticipantTabs}
+        options={{
+        headerShown: false,
+        title: 'Regresar',                 // 👈 ESTO ES LA CLAVE
+        headerBackTitleVisible: false,
+        headerBackTitle: '',
+      }}
+      />
+
       <Stack.Screen name="SponsorHome" component={SponsorTabs} />
       <Stack.Screen name="AdminHome" component={AdminStack} />
 
-      {/* Extras */}
+
+
       <Stack.Screen
-        name="DetalleCupon"
-        component={DetalleCupon}
-        options={{ headerShown: true, title: 'Detalle del Cupón' }}
+        name="CuponesPorNegocio"
+        component={CuponesPorNegocio}
+        options={{
+        title: 'Cupones',
+        headerShown: true,
+        headerStyle: {
+        backgroundColor: '#ccff34',
+        },
+        headerTintColor: '#000',
+        headerTitleStyle: {
+        fontWeight: 'bold',
+        },
+        }}
       />
+
+
     </Stack.Navigator>
   );
 }

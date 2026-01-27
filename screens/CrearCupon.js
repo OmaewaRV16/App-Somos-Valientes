@@ -7,20 +7,41 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
-  Image
+  Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 
 // ✅ URL PRODUCCIÓN
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
+
+// 🔹 CATEGORÍAS DISPONIBLES
+const CATEGORIAS = [
+  'Restaurantes',
+  'Salud',
+  'Servicios',
+  'Educación',
+  'Tiendas',
+  'Belleza',
+  'Entretenimiento',
+  'Otros',
+];
 
 export default function CrearCupon({ navigation }) {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [codigo, setCodigo] = useState('');
   const [logo, setLogo] = useState('');
+  const [categoria, setCategoria] = useState('');
 
   const guardar = async () => {
-    if (!nombre.trim() || !descripcion.trim() || !codigo.trim() || !logo.trim()) {
+    if (
+      !nombre.trim() ||
+      !descripcion.trim() ||
+      !codigo.trim() ||
+      !logo.trim() ||
+      !categoria
+    ) {
       Alert.alert('Error', 'Completa todos los campos');
       return;
     }
@@ -31,8 +52,7 @@ export default function CrearCupon({ navigation }) {
         descripcion: descripcion.trim(),
         codigo: codigo.trim(),
         logo: logo.trim(),
-        logoUrl: logo.trim(),
-        imagen: logo.trim(),
+        categoria,
       };
 
       const res = await fetch(`${API_URL}/api/cupones`, {
@@ -53,72 +73,113 @@ export default function CrearCupon({ navigation }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.titulo}>Crear Cupón</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.titulo}>Crear Cupón</Text>
 
-      {/* PREVIEW LOGO */}
-      <View style={styles.logoContainer}>
-        {logo ? (
-          <Image source={{ uri: logo }} style={styles.logo} />
-        ) : (
-          <View style={styles.logoPlaceholder}>
-            <Text style={styles.logoPlaceholderText}>SV</Text>
-          </View>
-        )}
-      </View>
+        {/* PREVIEW LOGO */}
+        <View style={styles.logoContainer}>
+          {logo ? (
+            <Image source={{ uri: logo }} style={styles.logo} />
+          ) : (
+            <View style={styles.logoPlaceholder}>
+              <Text style={styles.logoPlaceholderText}>SV</Text>
+            </View>
+          )}
+        </View>
 
-      <Text style={styles.label}>Nombre</Text>
-      <TextInput
-        value={nombre}
-        onChangeText={setNombre}
-        style={styles.input}
-        placeholder="Nombre del cupón"
-        placeholderTextColor="#999"
-      />
+        {/* NOMBRE */}
+        <Text style={styles.label}>Nombre del negocio</Text>
+        <TextInput
+          value={nombre}
+          onChangeText={setNombre}
+          style={styles.input}
+          placeholder="Ej. Pizza Valiente"
+          placeholderTextColor="#999"
+        />
 
-      <Text style={styles.label}>Descripción</Text>
-      <TextInput
-        value={descripcion}
-        onChangeText={setDescripcion}
-        style={[styles.input, { height: 80 }]}
-        placeholder="Descripción del cupón"
-        placeholderTextColor="#999"
-        multiline
-      />
+        {/* DESCRIPCIÓN */}
+        <Text style={styles.label}>Descripción</Text>
+        <TextInput
+          value={descripcion}
+          onChangeText={setDescripcion}
+          style={[styles.input, { height: 80 }]}
+          placeholder="Descripción del cupón"
+          placeholderTextColor="#999"
+          multiline
+        />
 
-      <Text style={styles.label}>Código</Text>
-      <TextInput
-        value={codigo}
-        onChangeText={setCodigo}
-        style={styles.input}
-        placeholder="Código del cupón"
-        placeholderTextColor="#999"
-        autoCapitalize="characters"
-      />
+        {/* CÓDIGO */}
+        <Text style={styles.label}>Código</Text>
+        <TextInput
+          value={codigo}
+          onChangeText={setCodigo}
+          style={styles.input}
+          placeholder="SV2025"
+          placeholderTextColor="#999"
+          autoCapitalize="characters"
+        />
 
-      <Text style={styles.label}>URL del logo</Text>
-      <TextInput
-        value={logo}
-        onChangeText={setLogo}
-        style={styles.input}
-        placeholder="https://..."
-        placeholderTextColor="#999"
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType="url"
-      />
+        {/* LOGO */}
+        <Text style={styles.label}>URL del logo</Text>
+        <TextInput
+          value={logo}
+          onChangeText={setLogo}
+          style={styles.input}
+          placeholder="https://..."
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+          keyboardType="url"
+        />
 
-      <TouchableOpacity style={styles.boton} onPress={guardar}>
-        <Text style={styles.botonTexto}>Guardar Cupón</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        {/* CATEGORÍA */}
+        <Text style={styles.label}>Categoría</Text>
+        <View style={styles.categoriasContainer}>
+          {CATEGORIAS.map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              style={[
+                styles.categoriaBtn,
+                categoria === cat && styles.categoriaActiva,
+              ]}
+              onPress={() => setCategoria(cat)}
+            >
+              <Text
+                style={[
+                  styles.categoriaTexto,
+                  categoria === cat && styles.categoriaTextoActivo,
+                ]}
+              >
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* GUARDAR */}
+        <TouchableOpacity style={styles.boton} onPress={guardar}>
+          <Text style={styles.botonTexto}>Guardar Cupón</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
+/* =======================
+   ESTILOS
+======================= */
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: '#000000',
+    padding: 30,
+    backgroundColor: '#000',
     flexGrow: 1,
   },
 
@@ -161,7 +222,7 @@ const styles = StyleSheet.create({
 
   label: {
     fontSize: 18,
-    marginBottom: 5,
+    marginBottom: 8,
     color: '#ccff34',
     fontWeight: 'bold',
   },
@@ -176,16 +237,41 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
 
+  /* CATEGORÍAS */
+  categoriasContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 20,
+  },
+  categoriaBtn: {
+    borderWidth: 1,
+    borderColor: '#ccff34',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  categoriaActiva: {
+    backgroundColor: '#ccff34',
+  },
+  categoriaTexto: {
+    color: '#ccff34',
+    fontWeight: 'bold',
+  },
+  categoriaTextoActivo: {
+    color: '#000',
+  },
+
   boton: {
     backgroundColor: '#ccff34',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
-    elevation: 4,
   },
   botonTexto: {
-    color: '#000000ff',
+    color: '#000',
     fontSize: 18,
     fontWeight: 'bold',
   },

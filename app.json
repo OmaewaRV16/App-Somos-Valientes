@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "App-Somos-Valientes",
+    "name": "Sociedad Valiente",
     "slug": "App-Somos-Valientes",
     "scheme": "appsomosvalientes",
     "version": "1.0.1",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
 
     "splash": {
-      "image": "./assets/logo-sv.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ccff34"
     },
@@ -18,20 +18,22 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.AppSomosValientes",
-      "buildNumber": "2",
+      "buildNumber": "5",
       "infoPlist": {
+        "CFBundleDisplayName": "Sociedad Valiente",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
 
     "android": {
+      "package": "com.anonymous.AppSomosValientes",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ccff34"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.AppSomosValientes"
+      "versionCode": 5,
+      "edgeToEdgeEnabled": true
     },
 
     "web": {

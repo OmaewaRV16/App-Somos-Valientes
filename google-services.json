@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "691772041405",
+    "project_id": "sociedad-valiente",
+    "storage_bucket": "sociedad-valiente.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:691772041405:android:cc0e2db3fe37a36d756fd4",
+        "android_client_info": {
+          "package_name": "com.anonymous.AppSomosValientes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLdp1kQqZ_ReEROPM8JsTz6wpUzk5Ye3E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

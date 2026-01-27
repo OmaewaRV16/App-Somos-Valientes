@@ -16,13 +16,15 @@ router.get("/", async (req, res) => {
 });
 
 // =========================
-// CREAR CUPÓN ✅ (CON LOGO)
+// CREAR CUPÓN (CON LOGO + CATEGORÍA) ✅
 // =========================
 router.post("/", async (req, res) => {
-  const { nombre, descripcion, codigo, logo } = req.body;
+  const { nombre, descripcion, codigo, logo, categoria } = req.body;
 
-  if (!nombre || !descripcion || !codigo) {
-    return res.status(400).json({ message: "Faltan datos para crear el cupón" });
+  if (!nombre || !descripcion || !codigo || !categoria) {
+    return res.status(400).json({
+      message: "Faltan datos para crear el cupón",
+    });
   }
 
   try {
@@ -30,8 +32,9 @@ router.post("/", async (req, res) => {
       nombre,
       descripcion,
       codigo,
-      logo, // 👈 AQUÍ
-      usados: []
+      logo,
+      categoria,
+      usados: [],
     });
 
     await nuevoCupon.save();
@@ -43,19 +46,28 @@ router.post("/", async (req, res) => {
 });
 
 // =========================
-// EDITAR CUPÓN (CON LOGO)
+// EDITAR CUPÓN (CON LOGO + CATEGORÍA)
 // =========================
 router.put("/:id", async (req, res) => {
-  const { nombre, descripcion, codigo, logo } = req.body;
+  const { nombre, descripcion, codigo, logo, categoria } = req.body;
 
   try {
     const cupon = await Cupon.findByIdAndUpdate(
       req.params.id,
-      { nombre, descripcion, codigo, logo }, // 👈 AQUÍ
+      {
+        nombre,
+        descripcion,
+        codigo,
+        logo,
+        categoria,
+      },
       { new: true }
     );
 
-    if (!cupon) return res.status(404).json({ message: "Cupón no encontrado" });
+    if (!cupon) {
+      return res.status(404).json({ message: "Cupón no encontrado" });
+    }
+
     res.json(cupon);
   } catch (error) {
     console.error(error);
@@ -69,37 +81,15 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const cupon = await Cupon.findByIdAndDelete(req.params.id);
-    if (!cupon) return res.status(404).json({ message: "Cupón no encontrado" });
+
+    if (!cupon) {
+      return res.status(404).json({ message: "Cupón no encontrado" });
+    }
+
     res.json({ message: "Cupón eliminado correctamente" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error al eliminar cupón" });
-  }
-});
-
-// =========================
-// CANJEAR CUPÓN
-// =========================
-router.post("/canjear", async (req, res) => {
-  const { cuponId, celular } = req.body;
-
-  if (!cuponId || !celular) {
-    return res.status(400).json({ message: "Faltan datos" });
-  }
-
-  try {
-    const cupon = await Cupon.findById(cuponId);
-    if (!cupon) return res.status(404).json({ message: "Cupón no encontrado" });
-
-    if (!cupon.usados.includes(celular)) {
-      cupon.usados.push(celular);
-    }
-
-    await cupon.save();
-    res.json({ message: "Cupón canjeado correctamente", cupon });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al canjear cupón" });
   }
 });
 
@@ -115,16 +105,15 @@ router.patch("/:id/canjear", async (req, res) => {
 
   try {
     const cupon = await Cupon.findById(req.params.id);
+
     if (!cupon) {
       return res.status(404).json({ message: "Cupón no encontrado" });
     }
 
-    // Inicializar array si no existe
     if (!Array.isArray(cupon.usados)) {
       cupon.usados = [];
     }
 
-    // Evitar doble canje
     if (cupon.usados.includes(celular)) {
       return res.status(400).json({ message: "Cupón ya canjeado" });
     }
@@ -138,6 +127,5 @@ router.patch("/:id/canjear", async (req, res) => {
     res.status(500).json({ message: "Error al canjear cupón" });
   }
 });
-
 
 module.exports = router;

@@ -7,16 +7,52 @@ import {
   Alert,
   ActivityIndicator,
   View,
-  Image
+  Image,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 
+/* =======================
+   AGRUPAR POR CATEGORÍA Y NEGOCIO
+======================= */
+const agruparPorCategoria = (cupones) => {
+  const categorias = {};
+
+  cupones.forEach((cupon) => {
+    const categoria = cupon.categoria || 'Otros';
+    const nombre = cupon.nombre?.trim() || 'Sin nombre';
+
+    if (!categorias[categoria]) {
+      categorias[categoria] = {};
+    }
+
+    if (!categorias[categoria][nombre]) {
+      categorias[categoria][nombre] = {
+        nombre,
+        logo: cupon.logo || cupon.logoUrl || cupon.imagen || null,
+        cupones: [cupon],
+      };
+    } else {
+      categorias[categoria][nombre].cupones.push(cupon);
+    }
+  });
+
+  return Object.keys(categorias).map((categoria) => ({
+    categoria,
+    negocios: Object.values(categorias[categoria]),
+  }));
+};
+
 export default function CuponeraScreen({ route, navigation }) {
   const { user } = route.params;
-  const [cupones, setCupones] = useState([]);
+
+  const [categorias, setCategorias] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
   const isFocused = useIsFocused();
 
   const fetchCupones = useCallback(async () => {
@@ -27,20 +63,24 @@ export default function CuponeraScreen({ route, navigation }) {
       const data = await resp.json();
 
       if (!resp.ok) {
-        Alert.alert('Error', data.message || 'No se pudieron cargar los cupones');
+        Alert.alert('Error', 'No se pudieron cargar los cupones');
         return;
       }
 
-      setCupones(data);
+      const agrupados = agruparPorCategoria(data);
+      setCategorias(agrupados);
+      setFiltered(agrupados);
     } catch (error) {
       console.log(error);
-      Alert.alert('Error', 'No se pudieron cargar los cupones.');
+      Alert.alert('Error', 'No se pudieron cargar los cupones');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     setLoading(true);
-    fetchCupones().finally(() => setLoading(false));
+    fetchCupones();
   }, [isFocused]);
 
   const onRefresh = async () => {
@@ -49,106 +89,150 @@ export default function CuponeraScreen({ route, navigation }) {
     setRefreshing(false);
   };
 
-  const handleOnCanjear = (cuponActualizado) => {
-    setCupones(prev =>
-      prev.map(c =>
-        c._id === cuponActualizado._id
-          ? { ...c, usado: { ...c.usado, [user.celular]: true } }
-          : c
-      )
-    );
-  };
+  /* =======================
+     BÚSQUEDA
+  ======================= */
+  const buscar = (text) => {
+    setSearch(text);
 
-  const handleVerDetalle = (cupon) => {
-    navigation.navigate('DetalleCupon', {
-      cupon,
-      user,
-      onCanjear: handleOnCanjear,
-    });
-  };
+    if (!text) {
+      setFiltered(categorias);
+      return;
+    }
 
-  const renderItem = ({ item }) => {
-    const usado = item.usado && item.usado[user.celular];
-    const logoUrl = item.logo || item.logoUrl || item.imagen;
+    const filtrado = categorias
+      .map((cat) => ({
+        ...cat,
+        negocios: cat.negocios.filter((n) =>
+          n.nombre.toLowerCase().includes(text.toLowerCase())
+        ),
+      }))
+      .filter((cat) => cat.negocios.length > 0);
 
-    return (
-      <TouchableOpacity
-        style={[styles.cupon, usado && styles.canjeado]}
-        onPress={() => handleVerDetalle(item)}
-        disabled={usado}
-      >
-        {/* LOGO IZQUIERDA */}
-        <View style={styles.logoWrapper}>
-          {logoUrl ? (
-            <Image
-              source={{ uri: logoUrl }}
-              style={styles.logo}
-            />
-          ) : (
-            <View style={styles.logoPlaceholder}>
-              <Text style={styles.logoPlaceholderText}>SV</Text>
-            </View>
-          )}
-        </View>
-
-        {/* INFO DERECHA */}
-        <View style={styles.info}>
-          <Text style={[styles.titulo, usado && styles.tituloCanjeado]}>
-            {item.nombre}
-          </Text>
-          <Text
-            style={[
-              styles.descripcion,
-              usado && styles.descripcionCanjeado,
-            ]}
-            numberOfLines={2}
-          >
-            {item.descripcion}
-          </Text>
-
-          {usado && <Text style={styles.usado}>✅ Canjeado</Text>}
-        </View>
-      </TouchableOpacity>
-    );
+    setFiltered(filtrado);
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       {loading ? (
         <View style={styles.loader}>
-          <ActivityIndicator size="large" />
-          <Text>Cargando cupones...</Text>
+          <ActivityIndicator size="large" color="#ccff34" />
+          <Text style={{ color: '#ccff34' }}>Cargando cupones...</Text>
         </View>
       ) : (
-        <FlatList
-          contentContainerStyle={styles.container}
-          data={cupones}
-          keyExtractor={(item) => item._id}
-          renderItem={renderItem}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        />
+        <>
+          {/* 🔍 BÚSQUEDA */}
+          <View style={styles.searchBox}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Buscar negocio..."
+              placeholderTextColor="#9aa09f"
+              value={search}
+              onChangeText={buscar}
+            />
+          </View>
+
+          {/* LISTA POR CATEGORÍAS */}
+          <FlatList
+            contentContainerStyle={styles.container}
+            data={filtered}
+            keyExtractor={(item) => item.categoria}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            renderItem={({ item }) => (
+              <View>
+                {/* CATEGORÍA */}
+                <Text style={styles.categoriaTitulo}>{item.categoria}</Text>
+
+                {/* NEGOCIOS */}
+                {item.negocios.map((negocio) => (
+                  <TouchableOpacity
+                    key={negocio.nombre}
+                    style={styles.cupon}
+                    onPress={() =>
+                      navigation.navigate('CuponesPorNegocio', {
+                        negocio,
+                        user,
+                      })
+                    }
+                  >
+                    {/* LOGO */}
+                    <View style={styles.logoWrapper}>
+                      {negocio.logo ? (
+                        <Image
+                          source={{ uri: negocio.logo }}
+                          style={styles.logo}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View style={styles.logoPlaceholder}>
+                          <Text style={styles.logoPlaceholderText}>SV</Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* INFO */}
+                    <View style={styles.info}>
+                      <Text style={styles.titulo}>{negocio.nombre}</Text>
+                      <Text style={styles.descripcion}>
+                        {negocio.cupones.length} cupón(es) disponibles
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          />
+        </>
       )}
     </SafeAreaView>
   );
 }
 
+/* =======================
+   ESTILOS
+======================= */
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000000ff',
+    backgroundColor: '#000',
   },
+
+  searchBox: {
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    backgroundColor: '#000',
+  },
+  searchInput: {
+    backgroundColor: '#1a1a1a',
+    borderColor: '#ccff34',
+    borderWidth: 1.5,
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 16,
+    color: '#ccff34',
+    marginBottom: 10,
+  },
+
   container: {
     padding: 20,
     paddingBottom: 80,
   },
+
   loader: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  /* TARJETA */
+  categoriaTitulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#ccff34',
+    marginBottom: 10,
+    marginTop: 20,
+  },
+
   cupon: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -159,35 +243,36 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
-  /* LOGO */
   logoWrapper: {
     marginRight: 15,
   },
   logo: {
-    width: 100,
-    height: 100,
-    borderRadius: 50, // 👈 circular
-    backgroundColor: '#ffffff',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#fff',
   },
   logoPlaceholder: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#ccff34',
   },
   logoPlaceholderText: {
     color: '#ccff34',
     fontWeight: 'bold',
+    fontSize: 20,
   },
 
-  /* TEXTO */
   info: {
     flex: 1,
   },
   titulo: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,
@@ -195,20 +280,5 @@ const styles = StyleSheet.create({
   descripcion: {
     fontSize: 14,
     color: '#0000008b',
-  },
-  usado: {
-    marginTop: 6,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-
-  canjeado: {
-    opacity: 0.7,
-  },
-  tituloCanjeado: {
-    color: '#777',
-  },
-  descripcionCanjeado: {
-    color: '#777',
   },
 });
