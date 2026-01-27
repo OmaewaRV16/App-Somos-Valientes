@@ -24,6 +24,7 @@ const CATEGORIAS = [
   'Tiendas',
   'Belleza',
   'Entretenimiento',
+  'Deportes',
   'Otros',
 ];
 
