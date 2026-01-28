@@ -7,7 +7,6 @@
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
 
     "splash": {
       "image": "./assets/logo.png",
@@ -18,7 +17,6 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.AppSomosValientes",
-      "buildNumber": "5",
       "infoPlist": {
         "CFBundleDisplayName": "Sociedad Valiente",
         "ITSAppUsesNonExemptEncryption": false
@@ -31,9 +29,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ccff34"
-      },
-      "versionCode": 5,
-      "edgeToEdgeEnabled": true
+      }
     },
 
     "web": {
