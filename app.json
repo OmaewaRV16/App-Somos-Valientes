@@ -3,7 +3,7 @@
     "name": "Sociedad Valiente",
     "slug": "App-Somos-Valientes",
     "scheme": "appsomosvalientes",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
@@ -17,6 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.AppSomosValientes",
+      "buildNumber": "1",
       "infoPlist": {
         "CFBundleDisplayName": "Sociedad Valiente",
         "ITSAppUsesNonExemptEncryption": false
@@ -25,6 +26,7 @@
 
     "android": {
       "package": "com.anonymous.AppSomosValientes",
+      "versionCode": 6,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
