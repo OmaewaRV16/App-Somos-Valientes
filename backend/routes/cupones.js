@@ -7,7 +7,7 @@ const Cupon = require("../models/Cupon");
 // =========================
 router.get("/", async (req, res) => {
   try {
-    const cupones = await Cupon.find();
+    const cupones = await Cupon.find().sort({ createdAt: -1 });
     res.json(cupones);
   } catch (error) {
     console.error(error);
@@ -16,10 +16,17 @@ router.get("/", async (req, res) => {
 });
 
 // =========================
-// CREAR CUPÓN (CON LOGO + CATEGORÍA) ✅
+// CREAR CUPÓN (LOGO + CATEGORÍA + WHATSAPP) ✅
 // =========================
 router.post("/", async (req, res) => {
-  const { nombre, descripcion, codigo, logo, categoria } = req.body;
+  const {
+    nombre,
+    descripcion,
+    codigo,
+    logo,
+    categoria,
+    whatsapp, // 👈 NUEVO
+  } = req.body;
 
   if (!nombre || !descripcion || !codigo || !categoria) {
     return res.status(400).json({
@@ -29,11 +36,12 @@ router.post("/", async (req, res) => {
 
   try {
     const nuevoCupon = new Cupon({
-      nombre,
-      descripcion,
-      codigo,
-      logo,
-      categoria,
+      nombre: nombre.trim(),
+      descripcion: descripcion.trim(),
+      codigo: codigo.trim(),
+      logo: logo?.trim(),
+      categoria: categoria.trim(),
+      whatsapp: whatsapp?.trim(), // 👈 SE GUARDA
       usados: [],
     });
 
@@ -46,20 +54,28 @@ router.post("/", async (req, res) => {
 });
 
 // =========================
-// EDITAR CUPÓN (CON LOGO + CATEGORÍA)
+// EDITAR CUPÓN (LOGO + CATEGORÍA + WHATSAPP)
 // =========================
 router.put("/:id", async (req, res) => {
-  const { nombre, descripcion, codigo, logo, categoria } = req.body;
+  const {
+    nombre,
+    descripcion,
+    codigo,
+    logo,
+    categoria,
+    whatsapp, // 👈 NUEVO
+  } = req.body;
 
   try {
     const cupon = await Cupon.findByIdAndUpdate(
       req.params.id,
       {
-        nombre,
-        descripcion,
-        codigo,
-        logo,
-        categoria,
+        nombre: nombre?.trim(),
+        descripcion: descripcion?.trim(),
+        codigo: codigo?.trim(),
+        logo: logo?.trim(),
+        categoria: categoria?.trim(),
+        whatsapp: whatsapp?.trim(), // 👈 SE ACTUALIZA
       },
       { new: true }
     );
@@ -94,7 +110,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 // =========================
-// CANJEAR CUPÓN (POR ID EN URL) ✅
+// CANJEAR CUPÓN (POR ID)
 // =========================
 router.patch("/:id/canjear", async (req, res) => {
   const { celular } = req.body;

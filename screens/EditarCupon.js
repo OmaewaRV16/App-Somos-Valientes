@@ -34,20 +34,19 @@ export default function EditarCupon({ route, navigation }) {
   const [nombre, setNombre] = useState(cupon?.nombre || '');
   const [descripcion, setDescripcion] = useState(cupon?.descripcion || '');
   const [codigo, setCodigo] = useState(cupon?.codigo || '');
-  const [logo, setLogo] = useState(
-    cupon?.logo || cupon?.logoUrl || cupon?.imagen || ''
-  );
+  const [logo, setLogo] = useState(cupon?.logo || '');
   const [categoria, setCategoria] = useState(cupon?.categoria || '');
+  const [whatsapp, setWhatsapp] = useState(cupon?.whatsapp || ''); // 👈 OPCIONAL
 
   const guardarCambios = async () => {
+    // ✅ SOLO ESTOS CAMPOS SON OBLIGATORIOS
     if (
       !nombre.trim() ||
       !descripcion.trim() ||
       !codigo.trim() ||
-      !logo.trim() ||
       !categoria
     ) {
-      Alert.alert('Error', 'Completa todos los campos');
+      Alert.alert('Error', 'Completa los campos obligatorios');
       return;
     }
 
@@ -56,8 +55,9 @@ export default function EditarCupon({ route, navigation }) {
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
         codigo: codigo.trim(),
-        logo: logo.trim(),
-        categoria, // 👈 IMPORTANTE
+        categoria,
+        logo: logo.trim() || null,        // 👈 opcional
+        whatsapp: whatsapp.trim() || null // 👈 opcional
       };
 
       const res = await fetch(
@@ -83,9 +83,14 @@ export default function EditarCupon({ route, navigation }) {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: '#000' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.titulo}>Editar Cupón</Text>
 
         {/* PREVIEW LOGO */}
@@ -100,7 +105,7 @@ export default function EditarCupon({ route, navigation }) {
         </View>
 
         {/* NOMBRE */}
-        <Text style={styles.label}>Nombre del negocio</Text>
+        <Text style={styles.label}>Nombre del negocio *</Text>
         <TextInput
           value={nombre}
           onChangeText={setNombre}
@@ -110,18 +115,18 @@ export default function EditarCupon({ route, navigation }) {
         />
 
         {/* DESCRIPCIÓN */}
-        <Text style={styles.label}>Descripción</Text>
+        <Text style={styles.label}>Descripción *</Text>
         <TextInput
           value={descripcion}
           onChangeText={setDescripcion}
           style={[styles.input, { height: 90 }]}
-          placeholder="Descripción del cupón"
+          placeholder="Primera línea como título y luego la descripción"
           placeholderTextColor="#999"
           multiline
         />
 
         {/* CÓDIGO */}
-        <Text style={styles.label}>Código</Text>
+        <Text style={styles.label}>Código *</Text>
         <TextInput
           value={codigo}
           onChangeText={setCodigo}
@@ -131,8 +136,8 @@ export default function EditarCupon({ route, navigation }) {
           autoCapitalize="characters"
         />
 
-        {/* LOGO */}
-        <Text style={styles.label}>URL del logo</Text>
+        {/* LOGO (OPCIONAL) */}
+        <Text style={styles.label}>URL del logo (opcional)</Text>
         <TextInput
           value={logo}
           onChangeText={setLogo}
@@ -143,8 +148,19 @@ export default function EditarCupon({ route, navigation }) {
           keyboardType="url"
         />
 
+        {/* WHATSAPP (OPCIONAL) */}
+        <Text style={styles.label}>WhatsApp del negocio (opcional)</Text>
+        <TextInput
+          value={whatsapp}
+          onChangeText={setWhatsapp}
+          style={styles.input}
+          placeholder="Ej. 9991234567 o link"
+          placeholderTextColor="#999"
+          keyboardType="phone-pad"
+        />
+
         {/* CATEGORÍA */}
-        <Text style={styles.label}>Categoría</Text>
+        <Text style={styles.label}>Categoría *</Text>
         <View style={styles.categoriasContainer}>
           {CATEGORIAS.map((cat) => (
             <TouchableOpacity
@@ -181,7 +197,7 @@ export default function EditarCupon({ route, navigation }) {
 ======================= */
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 30,
     backgroundColor: '#000',
     flexGrow: 1,
   },
@@ -194,7 +210,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  /* LOGO */
   logoContainer: {
     alignItems: 'center',
     marginBottom: 20,
@@ -224,8 +239,8 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 18,
-    marginBottom: 8,
+    fontSize: 16,
+    marginBottom: 6,
     color: '#ccff34',
     fontWeight: 'bold',
   },
@@ -240,7 +255,6 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
 
-  /* CATEGORÍAS */
   categoriasContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',

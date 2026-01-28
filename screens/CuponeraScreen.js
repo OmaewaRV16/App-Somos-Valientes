@@ -13,9 +13,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 
-/* =======================
-   AGRUPAR POR CATEGORÍA Y NEGOCIO
-======================= */
 const agruparPorCategoria = (cupones) => {
   const categorias = {};
 

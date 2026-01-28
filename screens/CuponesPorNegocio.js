@@ -7,15 +7,15 @@ import {
   Alert,
   FlatList,
   Image,
+  Linking,
 } from 'react-native';
 
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
-export default function CuponesPorNegocio({ route, navigation }) {
+export default function CuponesPorNegocio({ route }) {
   const { negocio, user } = route.params;
 
   const [cupones, setCupones] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     cargarCupones();
@@ -33,14 +33,25 @@ export default function CuponesPorNegocio({ route, navigation }) {
       setCupones(filtrados);
     } catch (e) {
       Alert.alert('Error', 'No se pudieron cargar los cupones');
-    } finally {
-      setLoading(false);
     }
   };
 
+  const abrirWhatsApp = (whatsapp) => {
+    if (!whatsapp) return;
+
+    const mensaje = 'Hola, vengo desde la app Sociedad Valiente 👋';
+
+    const url = whatsapp.startsWith('http')
+      ? whatsapp
+      : `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensaje)}`;
+
+    Linking.openURL(url).catch(() =>
+      Alert.alert('Error', 'No se pudo abrir WhatsApp')
+    );
+  };
+
   const canjearCupon = async (cupon) => {
-    const yaUsado = cupon.usados?.includes(user.celular);
-    if (yaUsado) return;
+    if (cupon.usados?.includes(user.celular)) return;
 
     try {
       const resp = await fetch(
@@ -56,17 +67,25 @@ export default function CuponesPorNegocio({ route, navigation }) {
 
       Alert.alert('Cupón canjeado', 'Muestra este código en el negocio');
       cargarCupones();
-    } catch (e) {
+    } catch {
       Alert.alert('Error', 'No se pudo canjear el cupón');
     }
   };
 
   const renderItem = ({ item }) => {
     const usado = item.usados?.includes(user.celular);
+    const lineas = item.descripcion?.split('\n') || [];
 
     return (
       <View style={[styles.card, usado && styles.canjeado]}>
-        <Text style={styles.titulo}>{item.descripcion}</Text>
+        {/* DESCRIPCIÓN */}
+        <Text style={styles.descripcion}>
+          <Text style={styles.descripcionTitulo}>
+            {lineas[0]}
+            {'\n'}
+          </Text>
+          {lineas.slice(1).join('\n')}
+        </Text>
 
         {usado && (
           <View style={styles.codigoBox}>
@@ -84,6 +103,18 @@ export default function CuponesPorNegocio({ route, navigation }) {
           </TouchableOpacity>
         )}
 
+        {/* BOTÓN WHATSAPP SOLO SI EXISTE */}
+        {item.whatsapp && (
+          <TouchableOpacity
+            style={styles.botonWhats}
+            onPress={() => abrirWhatsApp(item.whatsapp)}
+          >
+            <Text style={styles.botonWhatsTexto}>
+              Contactar por WhatsApp
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {usado && (
           <Text style={styles.usadoTexto}>✅ Ya canjeado</Text>
         )}
@@ -93,16 +124,12 @@ export default function CuponesPorNegocio({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* HEADER DEL NEGOCIO */}
+      {/* HEADER */}
       <View style={styles.headerContainer}>
-          <Text style={styles.header}>{negocio.nombre}</Text>
+        <Text style={styles.header}>{negocio.nombre}</Text>
+
         {negocio.logo ? (
-          <Image
-            source={{ uri: negocio.logo }}
-            style={styles.logo}
-            resizeMode="cover"
-          />
-          
+          <Image source={{ uri: negocio.logo }} style={styles.logo} />
         ) : (
           <View style={styles.logoPlaceholder}>
             <Text style={styles.logoPlaceholderText}>SV</Text>
@@ -120,6 +147,9 @@ export default function CuponesPorNegocio({ route, navigation }) {
   );
 }
 
+/* =======================
+   ESTILOS
+======================= */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -127,9 +157,15 @@ const styles = StyleSheet.create({
     padding: 15,
   },
 
-  /* HEADER */
   headerContainer: {
     alignItems: 'center',
+    marginBottom: 30,
+  },
+
+  header: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#ccff34',
     marginBottom: 30,
   },
 
@@ -137,53 +173,24 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: '#fff',
-    marginBottom: 10,
-
- 
     borderWidth: 4,
     borderColor: '#ccff34',
-
-    shadowColor: '#ccff34',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 14,
-
-    elevation: 14, 
   },
 
   logoPlaceholder: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-
     borderWidth: 4,
     borderColor: '#ccff34',
-
-    shadowColor: '#ccff34',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 12,
-
-    elevation: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   logoPlaceholderText: {
     color: '#ccff34',
     fontSize: 22,
     fontWeight: 'bold',
-  },
-
-  header: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ccff34',
-    textAlign: 'center',
-    marginBottom: 30,
   },
 
   card: {
@@ -196,12 +203,18 @@ const styles = StyleSheet.create({
 
   canjeado: { opacity: 0.85 },
 
-  titulo: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  descripcion: {
+    fontSize: 13,
+    color: '#333',
     marginBottom: 15,
+    lineHeight: 22,
+  },
+
+  descripcionTitulo: {
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#000',
+    textAlign: 'center',
   },
 
   codigoBox: {
@@ -218,7 +231,6 @@ const styles = StyleSheet.create({
   codigo: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#000',
   },
 
   boton: {
@@ -226,6 +238,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 12,
+    marginBottom: 10,
   },
 
   botonTexto: {
@@ -233,8 +246,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  botonWhats: {
+    backgroundColor: '#25D366',
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 12,
+  },
+
+  botonWhatsTexto: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
   usadoTexto: {
-    fontSize: 20,
     marginTop: 10,
     fontWeight: 'bold',
     color: '#ff0000',

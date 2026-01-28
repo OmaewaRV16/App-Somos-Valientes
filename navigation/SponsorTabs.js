@@ -87,7 +87,7 @@ export default function SponsorTabs() {
         initialParams={{ user }}
       />
       <Tab.Screen
-        name="Acciones"
+        name="Actividades"
         component={AccionesScreen}
         initialParams={{ user }}
       />
@@ -97,7 +97,7 @@ export default function SponsorTabs() {
         initialParams={{ user }}
       />
       <Tab.Screen
-        name="Comentarios"
+        name="Comentanos"
         component={ComentariosScreen}
         initialParams={{ user }}
       />

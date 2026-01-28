@@ -61,9 +61,9 @@ export default function ParticipantTabs() {
         let iconName;
 
         if (route.name === 'Cuponera') iconName = 'pricetag';
-        else if (route.name === 'Acciones') iconName = 'flash';
+        else if (route.name === 'Actividades') iconName = 'flash';
         else if (route.name === 'TarjetaVirtual') iconName = 'card';
-        else if (route.name === 'Comentarios') iconName = 'chatbubbles';
+        else if (route.name === 'Comentanos') iconName = 'chatbubbles';
         else if (route.name === 'Perfil') iconName = 'person';
 
         return {
@@ -87,7 +87,7 @@ export default function ParticipantTabs() {
         initialParams={{ user }}
       />
       <Tab.Screen
-        name="Acciones"
+        name="Actividades"
         component={AccionesScreen}
         initialParams={{ user }}
       />
@@ -97,7 +97,7 @@ export default function ParticipantTabs() {
         initialParams={{ user }}
       />
       <Tab.Screen
-        name="Comentarios"
+        name="Comentanos"
         component={ComentariosScreen}
         initialParams={{ user }}
       />

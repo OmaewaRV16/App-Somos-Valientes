@@ -5,25 +5,23 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  RefreshControl
+  RefreshControl,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-const API_URL = "https://app-somos-valientes-production.up.railway.app";
+const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function AccionesScreen({ route }) {
   const { user } = route.params;
   const [acciones, setAcciones] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Cargar acciones desde la API
   const loadAcciones = async () => {
     try {
       const response = await fetch(`${API_URL}/api/acciones`);
-      if (!response.ok) {
-        throw new Error('Error al cargar las acciones');
-      }
+      if (!response.ok) throw new Error();
 
       const data = await response.json();
       setAcciones(Array.isArray(data) ? data : []);
@@ -33,33 +31,36 @@ export default function AccionesScreen({ route }) {
     }
   };
 
-  // Recarga cada vez que la pantalla se enfoque
   useFocusEffect(
     useCallback(() => {
       loadAcciones();
     }, [])
   );
 
-  // Pull-to-refresh
   const onRefresh = async () => {
     setRefreshing(true);
     await loadAcciones();
     setRefreshing(false);
   };
 
-  // Función al tocar acción
   const seleccionarAccion = (id) => {
-    console.log('Acción seleccionada:', id);
+    Alert.alert(
+      'Información',
+      'Próximamente esta sección tendrá más funciones.'
+    );
   };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.accion}
+      style={styles.card}
+      activeOpacity={0.85}
       onPress={() => seleccionarAccion(item._id)}
-      activeOpacity={0.7}
     >
-      <Text style={styles.titulo}>{item.titulo}</Text>
-      <Text style={styles.descripcion}>{item.descripcion}</Text>
+      {/* CONTENIDO */}
+      <View style={styles.cardContent}>
+        <Text style={styles.titulo}>{item.titulo}</Text>
+        <Text style={styles.descripcion}>{item.descripcion}</Text>
+      </View>
     </TouchableOpacity>
   );
 
@@ -71,11 +72,17 @@ export default function AccionesScreen({ route }) {
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#ccff34"
+          />
         }
         ListEmptyComponent={
-          <Text style={{ color: '#fff', textAlign: 'center', marginTop: 40 }}>
-            No hay acciones disponibles
+          <Text style={styles.empty}>
+            No hay acciones disponibles por ahora.
+            {'\n'}
+            Pronto se agregarán nuevas iniciativas.
           </Text>
         }
       />
@@ -83,26 +90,56 @@ export default function AccionesScreen({ route }) {
   );
 }
 
+/* =======================
+   ESTILOS
+======================= */
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#000000ff' },
-  container: { padding: 20, paddingBottom: 80 },
-  accion: {
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+
+  container: {
+    padding: 20,
+    paddingBottom: 80,
+  },
+
+  /* CARD */
+  card: {
     backgroundColor: '#ccff34',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    borderRadius: 18,
+    marginBottom: 16,
+    padding: 20,
+
+    shadowColor: '#ccff34',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 6,
   },
+
+  cardContent: {
+    width: '100%',
+  },
+
   titulo: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#000000ff'
+    color: '#000',
+    marginBottom: 8,
   },
+
   descripcion: {
-    color: '#000000ff',
+    fontSize: 14,
+    color: '#000000cc',
+    lineHeight: 20,
+  },
+
+  empty: {
+    color: '#777',
+    textAlign: 'center',
+    marginTop: 60,
+    fontSize: 16,
+    lineHeight: 22,
   },
 });

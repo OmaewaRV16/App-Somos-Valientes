@@ -176,7 +176,7 @@ export default function RegisterScreen({ navigation }) {
               </View>
               <View style={styles.radioRow}>
                 <RadioButton value="padrino" color="#000" />
-                <Text>Padrino</Text>
+                <Text>Aportante</Text>
               </View>
             </RadioButton.Group>
 

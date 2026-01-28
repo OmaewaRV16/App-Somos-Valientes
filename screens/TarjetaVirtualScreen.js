@@ -26,6 +26,7 @@ export default function TarjetaVirtualScreen({ route }) {
 
   return (
     <View style={styles.container}>
+      {/* TARJETA */}
       <View style={styles.card}>
         <Text style={styles.titulo}>Tarjeta Somos Valientes</Text>
 
@@ -34,7 +35,9 @@ export default function TarjetaVirtualScreen({ route }) {
         </View>
 
         <View style={styles.infoContainer}>
-          <Text style={styles.nombre}>{user.nombres} {user.apellidoP}</Text>
+          <Text style={styles.nombre}>
+            {user.nombres} {user.apellidoP}
+          </Text>
           <Text style={styles.numero}>****  ****  ****  ****</Text>
         </View>
 
@@ -48,15 +51,23 @@ export default function TarjetaVirtualScreen({ route }) {
         </View>
       </View>
 
+      {/* BOTÓN */}
       <TouchableOpacity
         style={styles.boton}
         onPress={() => alert('Pronto podrás recargar y transferir 💸')}
       >
         <Text style={styles.botonTexto}>Opciones</Text>
       </TouchableOpacity>
+
+      <View style={styles.proximamenteBox}>
+        <Text style={styles.proximamenteTitulo}>
+          🚧 Próximamente
+        </Text>
+      </View>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container:{
@@ -64,60 +75,72 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     alignItems:'center',
     backgroundColor:'#000000ff',
+    paddingHorizontal:15,
   },
+
   card:{
-    width:'88%',
+    width:'100%',
     backgroundColor:'#ccff34',
     borderRadius:20,
     padding:25,
     position:'relative',
     elevation:6,
   },
+
   titulo:{
     color:'#000000ff',
     fontSize:18,
     fontWeight:'bold',
     marginBottom:25,
   },
+
   chipContainer:{
     alignItems:'flex-start',
     marginBottom:25,
   },
+
   chip:{
     width:45,
     height:30,
     borderRadius:6,
     backgroundColor:'gold',
   },
+
   infoContainer:{
     marginBottom:25,
   },
+
   nombre:{
     color:'#000000ff',
     fontSize:17,
     fontWeight:'500',
     marginBottom:5,
   },
+
   numero:{
     color:'#000000ff',
     fontSize:18,
     letterSpacing:3,
   },
+
   saldoContainer:{
     borderTopWidth:1,
     borderTopColor:'#000000ff',
     paddingTop:15,
   },
+
   label:{
     color:'#000000ff',
     fontSize:14,
   },
+
   monto:{
     color:'#000000ff',
     fontSize:30,
     fontWeight:'bold',
     marginTop:5,
   },
+
   logoContainer:{
     position:'absolute',
     bottom:15,
@@ -129,22 +152,49 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     alignItems:'center',
   },
+
   logoText:{
     color:'#ccff34',
     fontWeight:'bold',
     fontSize:16,
   },
+
+  /* AVISO */
+  proximamenteBox:{
+    width:'100%',
+    marginTop:20,
+    backgroundColor:'#111',
+    borderRadius:14,
+    padding:30,
+    borderWidth:1,
+    borderColor:'#ccff34',
+  },
+
+  proximamenteTitulo:{
+    color:'#ccff34',
+    fontSize:16,
+    fontWeight:'bold',
+    marginBottom:6,
+    textAlign:'center',
+  },
+
+  proximamenteTexto:{
+    color:'#cccccc',
+    fontSize:14,
+    lineHeight:20,
+  },
+
   boton:{
     backgroundColor:'#ccff34',
-    marginTop:40,
+    marginTop:25,
     paddingVertical:14,
     paddingHorizontal:40,
     borderRadius:10,
   },
+
   botonTexto:{
     color:'#000000ff',
     fontWeight:'bold',
     fontSize:16,
   },
 });
-
