@@ -76,31 +76,35 @@ export default function EditarAccion({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: '#f5f5f5', flexGrow: 1 },
+  container: { padding: 20, backgroundColor: '#000000', flexGrow: 1 },
   titulo: {
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#ff6f00',
+    color: '#ccff34',
     textAlign: 'center'
   },
-  label: { fontSize: 16, marginBottom: 5, color: '#333' },
+  label: {     
+    fontSize: 16,
+    marginBottom: 6,
+    color: '#ccff34',
+    fontWeight: 'bold',
+  },
   input: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 10,
+    padding: 14,
     fontSize: 16,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#ddd'
+    borderColor: '#ddd',
   },
   boton: {
-    backgroundColor: '#ff6f00',
-    paddingVertical: 15,
-    borderRadius: 8,
+    backgroundColor: '#ccff34',
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
-    elevation: 3
   },
-  botonTexto: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  botonTexto: { color: '#000000', fontSize: 18, fontWeight: 'bold' },
 });
