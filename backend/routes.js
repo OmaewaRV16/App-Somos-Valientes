@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const User = require("./models/User");
+const { enviarSMS } = require("./services/sms");
 
 // =====================
 // REGISTRO
@@ -32,6 +33,7 @@ router.post("/register", async (req, res) => {
   }
 
   try {
+    // 🔍 Verificar si ya existe
     const existingUser = await User.findOne({ celular });
     if (existingUser) {
       return res
@@ -39,9 +41,13 @@ router.post("/register", async (req, res) => {
         .json({ message: "Este número de celular ya está registrado" });
     }
 
+    // 🔐 Hash de contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 🔢 Generar código OTP (backend)
     const codigo = Math.floor(100000 + Math.random() * 900000);
 
+    // 👤 Crear usuario
     const newUser = new User({
       apellidoP,
       apellidoM,
@@ -57,10 +63,20 @@ router.post("/register", async (req, res) => {
 
     await newUser.save();
 
+    // 📩 Enviar SMS con EL MISMO código
+    const smsEnviado = await enviarSMS(celular, codigo);
+
+    if (!smsEnviado) {
+      return res.status(500).json({
+        message: "No se pudo enviar el código de verificación por SMS"
+      });
+    }
+
+    // ✅ Respuesta limpia (sin código)
     res.status(201).json({
-      message: "Usuario registrado. Falta verificar cuenta.",
-      codigo // SOLO para pruebas
+      message: "Usuario registrado. Revisa tu SMS para verificar tu cuenta."
     });
+
   } catch (error) {
     console.error("❌ Register error:", error);
     res.status(500).json({ message: "Error del servidor" });
@@ -72,6 +88,10 @@ router.post("/register", async (req, res) => {
 // =====================
 router.post("/verificar", async (req, res) => {
   const { celular, codigo } = req.body;
+
+  if (!celular || !codigo) {
+    return res.status(400).json({ message: "Datos incompletos" });
+  }
 
   try {
     const user = await User.findOne({ celular });
@@ -86,10 +106,12 @@ router.post("/verificar", async (req, res) => {
       user.verificado = true;
       user.codigo = null;
       await user.save();
-      res.json({ message: "Cuenta verificada correctamente" });
-    } else {
-      res.status(400).json({ message: "Código incorrecto" });
+
+      return res.json({ message: "Cuenta verificada correctamente" });
     }
+
+    return res.status(400).json({ message: "Código incorrecto" });
+
   } catch (error) {
     console.error("❌ Verificar error:", error);
     res.status(500).json({ message: "Error al verificar" });
@@ -123,8 +145,10 @@ router.post("/login", async (req, res) => {
     if (!valid)
       return res.status(401).json({ message: "Contraseña incorrecta" });
 
-    const { password: pw, ...userData } = user.toObject();
+    const { password: pw, codigo, ...userData } = user.toObject();
+
     res.json({ message: "Login exitoso", user: userData });
+
   } catch (error) {
     console.error("❌ Login error:", error);
     res.status(500).json({ message: "Error del servidor" });
@@ -132,11 +156,11 @@ router.post("/login", async (req, res) => {
 });
 
 // =====================
-// USUARIOS
+// USUARIOS (ADMIN / DEBUG)
 // =====================
 router.get("/users", async (req, res) => {
   try {
-    const users = await User.find({}, "-password");
+    const users = await User.find({}, "-password -codigo");
     res.json(users);
   } catch (error) {
     console.error("❌ Users error:", error);

@@ -60,51 +60,55 @@ export default function ComentariosScreen({ route }) {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 0}
       >
         <ScrollView
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
         >
-          {/* LOGO */}
-          <View style={styles.logoContainer}>
-            <Image
-              source={require('../assets/logo.png')} // 👈 ajusta si cambia la ruta
-              style={styles.logo}
-              resizeMode="contain"
-            />
+          {/* CONTENEDOR CENTRADO */}
+          <View style={styles.contentWrapper}>
+
+            {/* LOGO */}
+            <View style={styles.logoContainer}>
+              <Image
+                source={require('../assets/logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+
+            {/* TÍTULO */}
+            <Text style={styles.titulo}>Tu opinión es importante</Text>
+
+            {/* DESCRIPCIÓN */}
+            <Text style={styles.descripcion}>
+              En Sociedad Valiente creemos en construir comunidad escuchándonos.
+              Tu experiencia, ideas y sugerencias nos ayudan a seguir mejorando
+              este proyecto pensado para todas y todos.
+            </Text>
+
+            {/* CAJA DE TEXTO */}
+            <View style={styles.textAreaContainer}>
+              <TextInput
+                placeholder="Escribe aquí tu mensaje con total confianza..."
+                placeholderTextColor="#ccff34"
+                style={styles.input}
+                multiline
+                value={texto}
+                onChangeText={setTexto}
+                textAlignVertical="top"
+              />
+            </View>
+
+            {/* BOTÓN */}
+            <TouchableOpacity
+              style={styles.boton}
+              onPress={enviarComentario}
+            >
+              <Text style={styles.botonTexto}>Enviar mensaje</Text>
+            </TouchableOpacity>
+
           </View>
-
-          {/* TÍTULO */}
-          <Text style={styles.titulo}>Tu opinión es importante</Text>
-
-          {/* DESCRIPCIÓN */}
-          <Text style={styles.descripcion}>
-            En Sociedad Valiente creemos en construir comunidad escuchándonos.
-            Tu experiencia, ideas y sugerencias nos ayudan a seguir mejorando
-            este proyecto pensado para todas y todos.
-          </Text>
-
-          {/* CAJA DE TEXTO */}
-          <View style={styles.textAreaContainer}>
-            <TextInput
-              placeholder="Escribe aquí tu mensaje con total confianza..."
-              placeholderTextColor="#ccff34"
-              style={styles.input}
-              multiline
-              value={texto}
-              onChangeText={setTexto}
-              textAlignVertical="top"
-            />
-          </View>
-
-          {/* BOTÓN */}
-          <TouchableOpacity
-            style={styles.boton}
-            onPress={enviarComentario}
-          >
-            <Text style={styles.botonTexto}>Enviar mensaje</Text>
-          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -121,12 +125,15 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    padding: 24,
     flexGrow: 1,
-    justifyContent: 'center',
+    padding: 24,
   },
 
-  /* LOGO */
+  contentWrapper: {
+    marginTop: 'auto',
+    marginBottom: 'auto',
+  },
+
   logoContainer: {
     alignItems: 'center',
     marginBottom: 25,
@@ -139,8 +146,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     borderWidth: 4,
     borderColor: '#ccff34',
-
-    // glow / aura
     shadowColor: '#ccff34',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.9,
