@@ -3,7 +3,7 @@
     "name": "Sociedad Valiente",
     "slug": "App-Somos-Valientes",
     "scheme": "appsomosvalientes",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
@@ -26,7 +26,7 @@
 
     "android": {
       "package": "com.anonymous.AppSomosValientes",
-      "versionCode": 6,
+      "versionCode": 7,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
