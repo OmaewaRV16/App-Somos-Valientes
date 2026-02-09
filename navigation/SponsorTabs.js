@@ -10,6 +10,7 @@ import AccionesScreen from '../screens/AccionesScreen';
 import ApoyarScreen from '../screens/ApoyarScreen';
 import ComentariosScreen from '../screens/ComentariosScreen';
 import PerfilScreen from '../screens/PerfilScreen';
+import TarjetaVirtualScreen from '../screens/TarjetaVirtualScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -94,6 +95,11 @@ export default function SponsorTabs() {
       <Tab.Screen
         name="Apoyar"
         component={ApoyarScreen}
+        initialParams={{ user }}
+      />
+      <Tab.Screen
+        name="Noticias"
+        component={TarjetaVirtualScreen}
         initialParams={{ user }}
       />
       <Tab.Screen

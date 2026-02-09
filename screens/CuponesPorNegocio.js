@@ -99,7 +99,7 @@ export default function CuponesPorNegocio({ route }) {
             style={styles.boton}
             onPress={() => canjearCupon(item)}
           >
-            <Text style={styles.botonTexto}>Canjear Cupón</Text>
+            {/* <Text style={styles.botonTexto}>Canjear Cupón</Text> */}
           </TouchableOpacity>
         )}
 
@@ -110,7 +110,7 @@ export default function CuponesPorNegocio({ route }) {
             onPress={() => abrirWhatsApp(item.whatsapp)}
           >
             <Text style={styles.botonWhatsTexto}>
-              Contactar por WhatsApp
+              Canjear Cupón por WhatsApp
             </Text>
           </TouchableOpacity>
         )}
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  boton: {
+/*   boton: {
     backgroundColor: '#000',
     paddingVertical: 14,
     paddingHorizontal: 40,
@@ -244,17 +244,17 @@ const styles = StyleSheet.create({
   botonTexto: {
     color: '#ccff34',
     fontWeight: 'bold',
-  },
+  }, */
 
   botonWhats: {
-    backgroundColor: '#25D366',
+    backgroundColor: '#000000',
     paddingVertical: 14,
     paddingHorizontal: 30,
     borderRadius: 12,
   },
 
   botonWhatsTexto: {
-    color: '#fff',
+    color: '#ccff34',
     fontWeight: 'bold',
   },
 

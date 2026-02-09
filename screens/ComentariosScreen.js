@@ -89,7 +89,7 @@ export default function ComentariosScreen({ route }) {
           <View style={styles.textAreaContainer}>
             <TextInput
               placeholder="Escribe aquí tu mensaje con total confianza..."
-              placeholderTextColor="#9aa09f"
+              placeholderTextColor="#ccff34"
               style={styles.input}
               multiline
               value={texto}
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    minHeight: 180,
+    minHeight: 100,
     fontSize: 16,
     color: '#ccff34',
   },

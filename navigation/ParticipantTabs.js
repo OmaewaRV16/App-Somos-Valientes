@@ -56,13 +56,13 @@ export default function ParticipantTabs() {
 
   return (
     <Tab.Navigator
-      initialRouteName="Cuponera"
+      initialRouteName="Noticias"
       screenOptions={({ route }) => {
         let iconName;
 
         if (route.name === 'Cuponera') iconName = 'pricetag';
         else if (route.name === 'Actividades') iconName = 'flash';
-        else if (route.name === 'TarjetaVirtual') iconName = 'card';
+        else if (route.name === 'Noticias') iconName = 'newspaper';
         else if (route.name === 'Comentanos') iconName = 'chatbubbles';
         else if (route.name === 'Perfil') iconName = 'person';
 
@@ -92,7 +92,7 @@ export default function ParticipantTabs() {
         initialParams={{ user }}
       />
       <Tab.Screen
-        name="TarjetaVirtual"
+        name="Noticias"
         component={TarjetaVirtualScreen}
         initialParams={{ user }}
       />
