@@ -19,7 +19,7 @@ const NOTICIAS = [
       'Vecinas y vecinos se suman a una iniciativa que busca construir comunidad, conciencia social y apoyo mutuo.',
     imagen:
       'https://scontent.fcjs3-1.fna.fbcdn.net/v/t39.30808-6/626353161_1365305295611715_4420526009958455416_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeH7J-PcElh5OUrppHGEQtxvrdZ9d5_mVyyt1n13n-ZXLFMM4pCtpDChonaEEgQhAUruPTnjmG9LMUwDrCk9K9Zd&_nc_ohc=tdL0tnK7tT4Q7kNvwFj7alo&_nc_oc=Admtuk-A8aeVWPq-wbRxJq83EwiPb98Bw437mQ3l1ELmSKd6q_aMN1aO2dWLkiCfnXA&_nc_zt=23&_nc_ht=scontent.fcjs3-1.fna&_nc_gid=p5u9ho7Fxx6l9QDzVTYCOA&oh=00_AfuclVopUkjCYkigWp7puRN9x0OVgl0CCQZ5zwO49Gqhvw&oe=698FEC6C', // ⬅️ cambia por la imagen real
-    link: 'https://www.facebook.com/share/p/18L2Qtn2T3/',
+    link: 'https://www.facebook.com/PerroNegroTV/posts/pfbid07zza5g9PzbSUpkiEKCPgerPTC2KJ3BShNt8AxqsPFqzu5LRk3mKriPr51MJwU6Drl',
   },
   {
     id: '2',
@@ -28,7 +28,7 @@ const NOTICIAS = [
       'Cierre del Tercer Curso de Keratina y Alaciado nace de una mujer valiente para mujeres valientes, que creen en el poder de crear juntas una sociedad presente, solidaria y valiente.',
     imagen:
       'https://scontent.fisj3-3.fna.fbcdn.net/v/t39.30808-6/627899956_122278488074075881_3533193883339252838_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeHcOLbsbauBjDv12vA-asDFbbuy0b0yhDJtu7LRvTKEMiran7uWK5Y5ODNJyeTiZn0KX4juk3rDXDVCZXbaT7Cz&_nc_ohc=epRHPxyFW-sQ7kNvwG1rzbj&_nc_oc=Adk3HCfdozke7BFD8Ld6jc93RWuOmQ7jOIICI1q5YmJXacQqEBIVJfzJ4dAh9qhXahg&_nc_zt=23&_nc_ht=scontent.fisj3-3.fna&_nc_gid=3lFolJCKMWilUysY3FnMug&oh=00_AfspP18y6uJcvfvLHugEdVRdGVg7d6PWsYQsEaUZXW_hQw&oe=69900A67', // ⬅️ cambia por la imagen real
-    link: 'https://www.facebook.com/share/p/17q1mCNUrk/',
+    link: 'https://www.facebook.com/SergioVadilloL/posts/pfbid02SSpE12GaiChg8xttSLT3bAbiT5cbuf8dErNhcBFUHsP8vGot1HCtDJ4yZxjXjXuvl',
   },
 ];
 
