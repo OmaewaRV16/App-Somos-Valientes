@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const { enviarSMS } = require('../services/sms');
 
 // ============================
 // REGISTRO
@@ -32,6 +33,7 @@ router.post('/register', async (req, res) => {
   }
 
   try {
+    // 🔍 Validar duplicado
     const existingUser = await User.findOne({ celular });
     if (existingUser) {
       return res
@@ -39,13 +41,14 @@ router.post('/register', async (req, res) => {
         .json({ message: 'Este número de celular ya está registrado' });
     }
 
+    // 🔐 Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const codigoSimulado = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
+    // 🔢 Generar código OTP (backend)
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // 👤 Crear usuario
     const newUser = new User({
       apellidoP,
       apellidoM,
@@ -55,18 +58,28 @@ router.post('/register', async (req, res) => {
       celular,
       password: hashedPassword,
       rol,
-      codigo: codigoSimulado,
+      codigo,
       verificado: false
     });
 
     await newUser.save();
 
+    // 📩 ENVIAR SMS CON EL MISMO CÓDIGO
+    const smsEnviado = await enviarSMS(celular, codigo);
+
+    if (!smsEnviado) {
+      return res.status(500).json({
+        message: 'No se pudo enviar el código de verificación por SMS'
+      });
+    }
+
+    // ✅ RESPUESTA LIMPIA (SIN CÓDIGO)
     res.status(201).json({
-      message: 'Usuario registrado con éxito',
-      codigoSimulado // ⚠️ SOLO PARA DESARROLLO
+      message: 'Usuario registrado. Revisa tu SMS para verificar tu cuenta.'
     });
+
   } catch (error) {
-    console.error(error);
+    console.error('❌ Error en registro:', error);
     res.status(500).json({ message: 'Error al registrar usuario' });
   }
 });
@@ -76,6 +89,10 @@ router.post('/register', async (req, res) => {
 // ============================
 router.post('/verificar', async (req, res) => {
   const { celular, codigo } = req.body;
+
+  if (!celular || !codigo) {
+    return res.status(400).json({ message: 'Datos incompletos' });
+  }
 
   try {
     const user = await User.findOne({ celular });
@@ -97,41 +114,10 @@ router.post('/verificar', async (req, res) => {
     }
 
     return res.status(400).json({ message: 'Código incorrecto' });
+
   } catch (error) {
-    console.error(error);
+    console.error('❌ Error verificando:', error);
     res.status(500).json({ message: 'Error al verificar' });
-  }
-});
-
-// ============================
-// 🔍 OBTENER CÓDIGO (DEV / TESTFLIGHT)
-// ============================
-router.get('/codigo/:celular', async (req, res) => {
-  try {
-    const { celular } = req.params;
-
-    const user = await User.findOne({ celular });
-
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
-    }
-
-    if (user.verificado) {
-      return res
-        .status(400)
-        .json({ message: 'Usuario ya verificado' });
-    }
-
-    if (!user.codigo) {
-      return res
-        .status(404)
-        .json({ message: 'Código no disponible' });
-    }
-
-    res.json({ codigo: user.codigo });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al obtener código' });
   }
 });
 
@@ -149,6 +135,7 @@ router.post('/login', async (req, res) => {
 
   try {
     const user = await User.findOne({ celular });
+
     if (!user) {
       return res.status(400).json({ message: 'Usuario no encontrado' });
     }
@@ -166,8 +153,9 @@ router.post('/login', async (req, res) => {
         .json({ message: 'Contraseña incorrecta' });
     }
 
-    const { password: pw, ...userData } = user.toObject();
+    const { password: pw, codigo, ...userData } = user.toObject();
     res.json({ message: 'Login exitoso', user: userData });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error del servidor' });
@@ -175,11 +163,11 @@ router.post('/login', async (req, res) => {
 });
 
 // ============================
-// OBTENER USUARIOS
+// USUARIOS (ADMIN)
 // ============================
 router.get('/users', async (req, res) => {
   try {
-    const users = await User.find({}, '-password');
+    const users = await User.find({}, '-password -codigo');
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Error del servidor' });
@@ -188,7 +176,7 @@ router.get('/users', async (req, res) => {
 
 router.get('/users/rol/:rol', async (req, res) => {
   try {
-    const users = await User.find({ rol: req.params.rol }, '-password');
+    const users = await User.find({ rol: req.params.rol }, '-password -codigo');
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Error del servidor' });
@@ -196,7 +184,7 @@ router.get('/users/rol/:rol', async (req, res) => {
 });
 
 // ============================
-// ❌ ELIMINAR CUENTA (FIX DEFINITIVO)
+// ❌ ELIMINAR CUENTA
 // ============================
 router.delete('/users/:id', async (req, res) => {
   try {
