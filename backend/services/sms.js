@@ -1,19 +1,22 @@
-const Telnyx = require("telnyx");
-const telnyx = Telnyx(process.env.TELNYX_API_KEY);
+const { Vonage } = require("@vonage/server-sdk");
+
+const vonage = new Vonage({
+  apiKey: process.env.VONAGE_KEY,
+  apiSecret: process.env.VONAGE_SECRET,
+});
 
 async function enviarSMS(celular, codigo) {
   try {
-    const response = await telnyx.messages.create({
-      messaging_profile_id: process.env.TELNYX_PROFILE_ID, // 🔥 ESTO
+    const response = await vonage.sms.send({
+      to: `52${celular}`, // México
       from: "SV",
-      to: `+52${celular}`,
-      text: `Tu código de verificación de Sociedad Valiente es ${codigo}`,
+      text: `Tu código de verificación para Sociedad Valiente es ${codigo}`,
     });
 
-    console.log("📩 SMS enviado (Telnyx):", response.id);
+    console.log("📩 SMS enviado:", response);
     return true;
   } catch (error) {
-    console.error("❌ Error SMS Telnyx:", error);
+    console.error("❌ Error enviando SMS:", error);
     return false;
   }
 }
