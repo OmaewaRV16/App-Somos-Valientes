@@ -1,73 +1,103 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
-  Image,
+  ImageBackground,
   TouchableOpacity,
   Linking,
   Alert,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const NOTICIAS = [
-  {
-    id: '1',
-    titulo: 'Sociedad Valiente fortalece la vinculación ciudadana',
-    descripcion:
-      'Vecinas y vecinos se suman a una iniciativa que busca construir comunidad, conciencia social y apoyo mutuo.',
-    imagen:
-      'https://scontent.fcjs3-1.fna.fbcdn.net/v/t39.30808-6/626353161_1365305295611715_4420526009958455416_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeH7J-PcElh5OUrppHGEQtxvrdZ9d5_mVyyt1n13n-ZXLFMM4pCtpDChonaEEgQhAUruPTnjmG9LMUwDrCk9K9Zd&_nc_ohc=tdL0tnK7tT4Q7kNvwFj7alo&_nc_oc=Admtuk-A8aeVWPq-wbRxJq83EwiPb98Bw437mQ3l1ELmSKd6q_aMN1aO2dWLkiCfnXA&_nc_zt=23&_nc_ht=scontent.fcjs3-1.fna&_nc_gid=p5u9ho7Fxx6l9QDzVTYCOA&oh=00_AfuclVopUkjCYkigWp7puRN9x0OVgl0CCQZ5zwO49Gqhvw&oe=698FEC6C', // ⬅️ cambia por la imagen real
-    link: 'https://www.facebook.com/PerroNegroTV/posts/pfbid07zza5g9PzbSUpkiEKCPgerPTC2KJ3BShNt8AxqsPFqzu5LRk3mKriPr51MJwU6Drl',
-  },
-  {
-    id: '2',
-    titulo: 'Ser valiente es levantarte todos los días con ganas de crecer.',
-    descripcion:
-      'Cierre del Tercer Curso de Keratina y Alaciado nace de una mujer valiente para mujeres valientes, que creen en el poder de crear juntas una sociedad presente, solidaria y valiente.',
-    imagen:
-      'https://scontent.fisj3-3.fna.fbcdn.net/v/t39.30808-6/627899956_122278488074075881_3533193883339252838_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeHcOLbsbauBjDv12vA-asDFbbuy0b0yhDJtu7LRvTKEMiran7uWK5Y5ODNJyeTiZn0KX4juk3rDXDVCZXbaT7Cz&_nc_ohc=epRHPxyFW-sQ7kNvwG1rzbj&_nc_oc=Adk3HCfdozke7BFD8Ld6jc93RWuOmQ7jOIICI1q5YmJXacQqEBIVJfzJ4dAh9qhXahg&_nc_zt=23&_nc_ht=scontent.fisj3-3.fna&_nc_gid=3lFolJCKMWilUysY3FnMug&oh=00_AfspP18y6uJcvfvLHugEdVRdGVg7d6PWsYQsEaUZXW_hQw&oe=69900A67', // ⬅️ cambia por la imagen real
-    link: 'https://www.facebook.com/SergioVadilloL/posts/pfbid02SSpE12GaiChg8xttSLT3bAbiT5cbuf8dErNhcBFUHsP8vGot1HCtDJ4yZxjXjXuvl',
-  },
-];
+const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function NoticiasScreen() {
-  const abrirLink = async (url) => {
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      Linking.openURL(url);
-    } else {
-      Alert.alert('Error', 'No se pudo abrir la noticia');
+  const [noticias, setNoticias] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchNoticias();
+  }, []);
+
+  const fetchNoticias = async () => {
+    try {
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      setNoticias(data);
+    } catch (error) {
+      console.log("Error cargando noticias:", error);
+      Alert.alert("Error", "No se pudieron cargar las noticias");
+    } finally {
+      setLoading(false);
     }
   };
 
+  const abrirLink = async (url) => {
+    const supported = await Linking.canOpenURL(url);
+    if (supported) Linking.openURL(url);
+    else Alert.alert('Error', 'No se pudo abrir la noticia');
+  };
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.85}
-      onPress={() => abrirLink(item.link)}
-    >
-      <Image
+    <View style={styles.card}>
+      <ImageBackground
         source={{ uri: item.imagen }}
         style={styles.imagen}
-        resizeMode="cover"
-      />
+        imageStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
+      >
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('../assets/logo-verde.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
 
-      <View style={styles.contenido}>
-        <Text style={styles.titulo}>{item.titulo}</Text>
-        <Text style={styles.descripcion}>{item.descripcion}</Text>
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.95)']}
+          style={styles.overlay}
+        >
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>SOCIEDAD VALIENTE</Text>
+          </View>
 
-        <Text style={styles.verMas}>Ver noticia →</Text>
+          <Text style={styles.titulo}>{item.titulo}</Text>
+        </LinearGradient>
+      </ImageBackground>
+
+      <View style={styles.content}>
+        <Text numberOfLines={3} style={styles.descripcion}>
+          {item.descripcion}
+        </Text>
+
+        <TouchableOpacity
+          style={styles.buttonContainer}
+          onPress={() => abrirLink(item.link)}
+        >
+          <Text style={styles.buttonText}>Leer más</Text>
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ActivityIndicator size="large" color="#ccff34" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <FlatList
-        data={NOTICIAS}
-        keyExtractor={(item) => item.id}
+        data={noticias}
+        keyExtractor={(item) => item._id}
         renderItem={renderItem}
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
@@ -75,57 +105,3 @@ export default function NoticiasScreen() {
     </SafeAreaView>
   );
 }
-
-/* =======================
-   ESTILOS
-======================= */
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-
-  container: {
-    padding: 25,
-    paddingBottom: 40,
-  },
-
-  card: {
-    backgroundColor: '#111',
-    borderRadius: 18,
-    marginBottom: 20,
-    overflow: 'hidden',
-    borderWidth: 5,
-    borderColor: '#ccff34',
-  },
-
-  imagen: {
-    width: '100%',
-    height: 200,
-  },
-
-  contenido: {
-    padding: 16,
-  },
-
-  titulo: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ccff34',
-    marginBottom: 8,
-  },
-
-  descripcion: {
-    fontSize: 14,
-    color: '#cccccc',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-
-  verMas: {
-    color: '#ccff34',
-    fontWeight: 'bold',
-    fontSize: 14,
-    textAlign: 'right',
-  },
-});

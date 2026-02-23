@@ -11,6 +11,7 @@ import CrearCupon from '../screens/CrearCupon';
 import EditarCupon from '../screens/EditarCupon';
 import CrearAccion from '../screens/CrearAccion';
 import EditarAccion from '../screens/EditarAccion';
+import AdminNoticiaScreen from '../screens/AdminNoticiaScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -89,6 +90,12 @@ export default function AdminStack() {
         name="EditarAccion"
         component={EditarAccion}
         options={{ title: 'Editar Acción' }}
+      />
+
+      <Stack.Screen
+        name="AdminNoticia"
+        component={AdminNoticiaScreen}
+        options={{ title: 'Administrar Noticias' }}
       />
     </Stack.Navigator>
   );

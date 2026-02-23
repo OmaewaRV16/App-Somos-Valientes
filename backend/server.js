@@ -7,6 +7,7 @@ const cuponesRoutes = require("./routes/cupones");
 const accionesRoutes = require("./routes/acciones");
 const comentariosRoutes = require("./routes/comentarios");
 const userRoutes = require("./routes/userRoutes");
+const noticiaRoutes = require("./routes/noticia"); // 🔥 NUEVO
 
 const User = require("./models/User");
 const bcrypt = require("bcrypt");
@@ -25,11 +26,6 @@ app.use(cors({
 app.use(express.json());
 
 // ==========================
-// CONEXIÓN A MONGODB
-// ==========================
-connectDB();
-
-// ==========================
 // HEALTH CHECK (Railway)
 // ==========================
 app.get("/ping", (req, res) => {
@@ -42,8 +38,7 @@ app.get("/ping", (req, res) => {
 app.use("/api/cupones", cuponesRoutes);
 app.use("/api/acciones", accionesRoutes);
 app.use("/api/comentarios", comentariosRoutes);
-
-// 🔥 USUARIOS / AUTH (incluye DELETE /api/users/:id)
+app.use("/api/noticia", noticiaRoutes); // 🔥 NUEVO
 app.use("/api", userRoutes);
 
 // ==========================
@@ -82,10 +77,17 @@ const crearAdmin = async () => {
   }
 };
 
-// Espera a DB antes de crear admin
-connectDB().then(() => {
-  setTimeout(crearAdmin, 1000);
-});
+// ==========================
+// CONEXIÓN A MONGODB
+// ==========================
+connectDB()
+  .then(() => {
+    console.log("✅ MongoDB conectado");
+    crearAdmin(); // 🔥 Solo se ejecuta después de conectar
+  })
+  .catch((err) => {
+    console.error("❌ Error conectando MongoDB:", err);
+  });
 
 // ==========================
 // PUERTO

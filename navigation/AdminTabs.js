@@ -9,13 +9,14 @@ import AdminCuponesScreen from '../screens/AdminCuponesScreen';
 import AdminAccionesScreen from '../screens/AdminAccionesScreen';
 import AdminPerfilScreen from '../screens/AdminPerfilScreen';
 import AdminComentariosScreen from '../screens/AdminComentariosScreen';
+import AdminNoticiaScreen from '../screens/AdminNoticiaScreen'; // 🔥 NUEVO
 
 const Tab = createBottomTabNavigator();
 
 export default function AdminTabs() {
   const [user, setUser] = useState(null);
 
-  // 🔐 Cargar usuario desde AsyncStorage (sesión persistente)
+  // 🔐 Cargar usuario desde AsyncStorage
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -31,7 +32,7 @@ export default function AdminTabs() {
     loadUser();
   }, []);
 
-  // 🛡️ Evita render sin usuario (sin spinner, sin crash)
+  // 🛡️ Evita render sin usuario
   if (!user) {
     return null;
   }
@@ -49,6 +50,7 @@ export default function AdminTabs() {
         },
         tabBarIcon: ({ color, size }) => {
           let iconName;
+
           switch (route.name) {
             case 'Participantes':
               iconName = 'people';
@@ -62,15 +64,19 @@ export default function AdminTabs() {
             case 'Acciones':
               iconName = 'check-circle';
               break;
-            case 'Perfil':
-              iconName = 'person';
-              break;
             case 'Comentarios':
               iconName = 'feedback';
+              break;
+            case 'Noticias':
+              iconName = 'article'; // 🔥 NUEVO
+              break;
+            case 'Perfil':
+              iconName = 'person';
               break;
             default:
               iconName = 'circle';
           }
+
           return <MaterialIcons name={iconName} size={30} color={color} />;
         },
       })}
@@ -80,26 +86,40 @@ export default function AdminTabs() {
         component={AdminParticipantesScreen}
         initialParams={{ user }}
       />
+
       <Tab.Screen
         name="Padrinos"
         component={AdminPadrinosScreen}
         initialParams={{ user }}
       />
+
       <Tab.Screen
         name="Cupones"
         component={AdminCuponesScreen}
         initialParams={{ user }}
       />
+
       <Tab.Screen
         name="Acciones"
         component={AdminAccionesScreen}
         initialParams={{ user }}
       />
+
       <Tab.Screen
         name="Comentarios"
         component={AdminComentariosScreen}
         initialParams={{ user }}
       />
+
+      {/* 🔥 SOLO ADMIN VE NOTICIAS */}
+      {user?.rol === "admin" && (
+        <Tab.Screen
+          name="Noticias"
+          component={AdminNoticiaScreen}
+          initialParams={{ user }}
+        />
+      )}
+
       <Tab.Screen
         name="Perfil"
         component={AdminPerfilScreen}
