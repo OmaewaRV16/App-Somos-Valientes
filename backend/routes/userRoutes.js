@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-const { enviarSMS } = require('../services/sms');
 
 // ============================
 // REGISTRO
@@ -33,7 +32,6 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    // 🔍 Validar duplicado
     const existingUser = await User.findOne({ celular });
     if (existingUser) {
       return res
@@ -41,14 +39,11 @@ router.post('/register', async (req, res) => {
         .json({ message: 'Este número de celular ya está registrado' });
     }
 
-    // 🔐 Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 🔢 Generar código OTP (backend)
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // 👤 Crear usuario
     const newUser = new User({
       apellidoP,
       apellidoM,
@@ -64,18 +59,10 @@ router.post('/register', async (req, res) => {
 
     await newUser.save();
 
-    // 📩 ENVIAR SMS CON EL MISMO CÓDIGO
-    const smsEnviado = await enviarSMS(celular, codigo);
-
-    if (!smsEnviado) {
-      return res.status(500).json({
-        message: 'No se pudo enviar el código de verificación por SMS'
-      });
-    }
-
-    // ✅ RESPUESTA LIMPIA (SIN CÓDIGO)
+    // 🔥 DEVOLVEMOS EL CÓDIGO AL FRONTEND
     res.status(201).json({
-      message: 'Usuario registrado. Revisa tu SMS para verificar tu cuenta.'
+      message: 'Usuario registrado correctamente',
+      codigo
     });
 
   } catch (error) {
@@ -85,7 +72,7 @@ router.post('/register', async (req, res) => {
 });
 
 // ============================
-// 🔐 VERIFICAR CUENTA
+// VERIFICAR CUENTA
 // ============================
 router.post('/verificar', async (req, res) => {
   const { celular, codigo } = req.body;
@@ -109,7 +96,6 @@ router.post('/verificar', async (req, res) => {
       user.verificado = true;
       user.codigo = null;
       await user.save();
-
       return res.json({ message: 'Cuenta verificada correctamente' });
     }
 
@@ -148,9 +134,7 @@ router.post('/login', async (req, res) => {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res
-        .status(400)
-        .json({ message: 'Contraseña incorrecta' });
+      return res.status(400).json({ message: 'Contraseña incorrecta' });
     }
 
     const { password: pw, codigo, ...userData } = user.toObject();
@@ -163,7 +147,7 @@ router.post('/login', async (req, res) => {
 });
 
 // ============================
-// USUARIOS (ADMIN)
+// USUARIOS
 // ============================
 router.get('/users', async (req, res) => {
   try {
@@ -184,7 +168,7 @@ router.get('/users/rol/:rol', async (req, res) => {
 });
 
 // ============================
-// ❌ ELIMINAR CUENTA
+// ELIMINAR CUENTA
 // ============================
 router.delete('/users/:id', async (req, res) => {
   try {
@@ -195,8 +179,8 @@ router.delete('/users/:id', async (req, res) => {
     }
 
     await user.deleteOne();
-
     res.json({ message: 'Cuenta eliminada correctamente' });
+
   } catch (error) {
     console.error('Error eliminando usuario:', error);
     res.status(500).json({ message: 'Error al eliminar cuenta' });
