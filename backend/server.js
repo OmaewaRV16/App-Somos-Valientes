@@ -7,7 +7,7 @@ const cuponesRoutes = require("./routes/cupones");
 const accionesRoutes = require("./routes/acciones");
 const comentariosRoutes = require("./routes/comentarios");
 const userRoutes = require("./routes/userRoutes");
-const noticiaRoutes = require("./routes/noticia"); // 👈 correcto
+const noticiaRoutes = require("./routes/noticia");
 
 const User = require("./models/User");
 const bcrypt = require("bcrypt");
@@ -26,20 +26,20 @@ app.use(cors({
 app.use(express.json());
 
 // ==========================
-// HEALTH CHECK (Railway)
+// HEALTH CHECK
 // ==========================
 app.get("/ping", (req, res) => {
   res.json({ ok: true, status: "Sociedad Valiente backend activo" });
 });
 
 // ==========================
-// RUTAS
+// RUTAS API
 // ==========================
 app.use("/api/cupones", cuponesRoutes);
 app.use("/api/acciones", accionesRoutes);
 app.use("/api/comentarios", comentariosRoutes);
-app.use("/api/noticias", noticiaRoutes); // 🔥 AQUÍ ESTÁ EL FIX
-app.use("/api", userRoutes);
+app.use("/api/noticias", noticiaRoutes);
+app.use("/api/users", userRoutes); // 🔥 AQUÍ ESTÁ LA CORRECCIÓN
 
 // ==========================
 // CREAR ADMIN AUTOMÁTICO

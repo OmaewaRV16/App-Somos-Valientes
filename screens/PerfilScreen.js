@@ -327,17 +327,14 @@ const styles = StyleSheet.create({
   imageWrapper: {
     position: 'absolute',
     top: 180,
-    borderRadius: 70,
     overflow: 'hidden',
-    borderWidth: 4,
-    borderColor: '#000',
     elevation: 15,
   },
 
   foto: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
   },
 
   card: {

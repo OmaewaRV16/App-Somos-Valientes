@@ -11,39 +11,30 @@ const upload = multer({ storage: multer.memoryStorage() });
 // REGISTRO
 // ============================
 router.post('/register', async (req, res) => {
-  const {
-    apellidoP,
-    apellidoM,
-    nombres,
-    fechaNac,
-    direccion,
-    celular,
-    password,
-    rol
-  } = req.body;
-
-  if (
-    !apellidoP ||
-    !apellidoM ||
-    !nombres ||
-    !fechaNac ||
-    !direccion ||
-    !celular ||
-    !password ||
-    !rol
-  ) {
-    return res.status(400).json({ message: 'Faltan datos obligatorios' });
-  }
-
   try {
+    const {
+      apellidoP,
+      apellidoM,
+      nombres,
+      fechaNac,
+      direccion,
+      celular,
+      password,
+      rol
+    } = req.body;
+
+    if (!apellidoP || !apellidoM || !nombres || !fechaNac ||
+        !direccion || !celular || !password || !rol) {
+      return res.status(400).json({ message: 'Faltan datos obligatorios' });
+    }
+
     const existingUser = await User.findOne({ celular });
     if (existingUser) {
-      return res.status(400).json({ message: 'Este número de celular ya está registrado' });
+      return res.status(400).json({ message: 'Este número ya está registrado' });
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
     const newUser = new User({
@@ -68,46 +59,8 @@ router.post('/register', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error en registro:', error);
+    console.error(error);
     res.status(500).json({ message: 'Error al registrar usuario' });
-  }
-});
-
-// ============================
-// SUBIR FOTO DE PERFIL 🔥
-// ============================
-router.put('/users/:id/foto', upload.single('foto'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No se envió imagen' });
-    }
-
-    const streamUpload = (req) => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: 'sociedad-valiente' },
-          (error, result) => {
-            if (result) resolve(result);
-            else reject(error);
-          }
-        );
-        stream.end(req.file.buffer);
-      });
-    };
-
-    const result = await streamUpload(req);
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      { foto: result.secure_url },
-      { new: true }
-    );
-
-    res.json(updatedUser);
-
-  } catch (error) {
-    console.error('Error subiendo foto:', error);
-    res.status(500).json({ message: 'Error subiendo imagen' });
   }
 });
 
@@ -115,13 +68,13 @@ router.put('/users/:id/foto', upload.single('foto'), async (req, res) => {
 // LOGIN
 // ============================
 router.post('/login', async (req, res) => {
-  const { celular, password } = req.body;
-
-  if (!celular || !password) {
-    return res.status(400).json({ message: 'Número de celular y contraseña son obligatorios' });
-  }
-
   try {
+    const { celular, password } = req.body;
+
+    if (!celular || !password) {
+      return res.status(400).json({ message: 'Datos incompletos' });
+    }
+
     const user = await User.findOne({ celular });
 
     if (!user) {
@@ -147,9 +100,55 @@ router.post('/login', async (req, res) => {
 });
 
 // ============================
+// OBTENER USUARIOS (ADMIN)
+// ============================
+router.get('/', async (req, res) => {
+  try {
+    const users = await User.find({}, '-password -codigo');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error del servidor' });
+  }
+});
+
+// ============================
+// SUBIR FOTO DE PERFIL
+// ============================
+router.put('/:id/foto', upload.single('foto'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No se envió imagen' });
+    }
+
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'sociedad-valiente' },
+        (error, result) => {
+          if (result) resolve(result);
+          else reject(error);
+        }
+      );
+      stream.end(req.file.buffer);
+    });
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { foto: result.secure_url },
+      { new: true }
+    );
+
+    res.json(updatedUser);
+
+  } catch (error) {
+    console.error('Error subiendo foto:', error);
+    res.status(500).json({ message: 'Error subiendo imagen' });
+  }
+});
+
+// ============================
 // ELIMINAR CUENTA
 // ============================
-router.delete('/users/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 
@@ -161,7 +160,7 @@ router.delete('/users/:id', async (req, res) => {
     res.json({ message: 'Cuenta eliminada correctamente' });
 
   } catch (error) {
-    console.error('Error eliminando usuario:', error);
+    console.error(error);
     res.status(500).json({ message: 'Error al eliminar cuenta' });
   }
 });
