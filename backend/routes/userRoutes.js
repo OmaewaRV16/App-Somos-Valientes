@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const cloudinary = require('../config/cloudinary');
 const User = require('../models/User');
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 // ============================
 // REGISTRO
@@ -34,9 +38,7 @@ router.post('/register', async (req, res) => {
   try {
     const existingUser = await User.findOne({ celular });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: 'Este número de celular ya está registrado' });
+      return res.status(400).json({ message: 'Este número de celular ya está registrado' });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -54,12 +56,12 @@ router.post('/register', async (req, res) => {
       password: hashedPassword,
       rol,
       codigo,
-      verificado: false
+      verificado: false,
+      foto: null
     });
 
     await newUser.save();
 
-    // 🔥 DEVOLVEMOS EL CÓDIGO AL FRONTEND
     res.status(201).json({
       message: 'Usuario registrado correctamente',
       codigo
@@ -72,38 +74,40 @@ router.post('/register', async (req, res) => {
 });
 
 // ============================
-// VERIFICAR CUENTA
+// SUBIR FOTO DE PERFIL 🔥
 // ============================
-router.post('/verificar', async (req, res) => {
-  const { celular, codigo } = req.body;
-
-  if (!celular || !codigo) {
-    return res.status(400).json({ message: 'Datos incompletos' });
-  }
-
+router.put('/users/:id/foto', upload.single('foto'), async (req, res) => {
   try {
-    const user = await User.findOne({ celular });
-
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
+    if (!req.file) {
+      return res.status(400).json({ message: 'No se envió imagen' });
     }
 
-    if (user.verificado) {
-      return res.json({ message: 'Usuario ya verificado' });
-    }
+    const streamUpload = (req) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'sociedad-valiente' },
+          (error, result) => {
+            if (result) resolve(result);
+            else reject(error);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+    };
 
-    if (user.codigo === codigo) {
-      user.verificado = true;
-      user.codigo = null;
-      await user.save();
-      return res.json({ message: 'Cuenta verificada correctamente' });
-    }
+    const result = await streamUpload(req);
 
-    return res.status(400).json({ message: 'Código incorrecto' });
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { foto: result.secure_url },
+      { new: true }
+    );
+
+    res.json(updatedUser);
 
   } catch (error) {
-    console.error('❌ Error verificando:', error);
-    res.status(500).json({ message: 'Error al verificar' });
+    console.error('Error subiendo foto:', error);
+    res.status(500).json({ message: 'Error subiendo imagen' });
   }
 });
 
@@ -114,9 +118,7 @@ router.post('/login', async (req, res) => {
   const { celular, password } = req.body;
 
   if (!celular || !password) {
-    return res
-      .status(400)
-      .json({ message: 'Número de celular y contraseña son obligatorios' });
+    return res.status(400).json({ message: 'Número de celular y contraseña son obligatorios' });
   }
 
   try {
@@ -127,9 +129,7 @@ router.post('/login', async (req, res) => {
     }
 
     if (!user.verificado) {
-      return res
-        .status(403)
-        .json({ message: 'Cuenta no verificada' });
+      return res.status(403).json({ message: 'Cuenta no verificada' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -142,27 +142,6 @@ router.post('/login', async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error del servidor' });
-  }
-});
-
-// ============================
-// USUARIOS
-// ============================
-router.get('/users', async (req, res) => {
-  try {
-    const users = await User.find({}, '-password -codigo');
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: 'Error del servidor' });
-  }
-});
-
-router.get('/users/rol/:rol', async (req, res) => {
-  try {
-    const users = await User.find({ rol: req.params.rol }, '-password -codigo');
-    res.json(users);
-  } catch (error) {
     res.status(500).json({ message: 'Error del servidor' });
   }
 });

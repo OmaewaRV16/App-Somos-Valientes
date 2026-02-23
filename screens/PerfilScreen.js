@@ -17,11 +17,15 @@ const { width } = Dimensions.get('window');
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function PerfilScreen({ navigation }) {
+
   const [user, setUser] = useState(null);
   const [imagen, setImagen] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
+  // ==========================
+  // CARGAR USUARIO
+  // ==========================
   useEffect(() => {
     const cargarUsuario = async () => {
       const data = await AsyncStorage.getItem('currentUser');
@@ -29,15 +33,17 @@ export default function PerfilScreen({ navigation }) {
         const parsedUser = JSON.parse(data);
         setUser(parsedUser);
 
-        const uri = await AsyncStorage.getItem(`userImage-${parsedUser.celular}`);
-        if (uri) setImagen(uri);
+        // 🔥 Cargar foto desde MongoDB
+        if (parsedUser.foto) {
+          setImagen(parsedUser.foto);
+        }
       }
     };
     cargarUsuario();
   }, []);
 
   // ==========================
-  // FOTO DE PERFIL
+  // SUBIR FOTO A CLOUDINARY
   // ==========================
   const seleccionarImagen = async () => {
     try {
@@ -55,13 +61,41 @@ export default function PerfilScreen({ navigation }) {
       });
 
       if (!result.canceled) {
+
         const uri = result.assets[0].uri;
-        setImagen(uri);
-        await AsyncStorage.setItem(`userImage-${user.celular}`, uri);
+
+        const formData = new FormData();
+        formData.append('foto', {
+          uri,
+          name: 'profile.jpg',
+          type: 'image/jpeg',
+        });
+
+        const response = await fetch(
+          `${API_URL}/api/users/${user._id}/foto`,
+          {
+            method: 'PUT',
+            body: formData,
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+
+        const updatedUser = await response.json();
+
+        // 🔥 Actualizar imagen en pantalla
+        setImagen(updatedUser.foto);
+
+        // 🔥 Actualizar usuario guardado
+        await AsyncStorage.setItem(
+          'currentUser',
+          JSON.stringify(updatedUser)
+        );
       }
+
     } catch (error) {
-      console.log(error);
-      Alert.alert('Error', 'No se pudo seleccionar la imagen.');
+      Alert.alert('Error', 'No se pudo subir la imagen.');
     }
   };
 
@@ -90,7 +124,7 @@ export default function PerfilScreen({ navigation }) {
   };
 
   // ==========================
-  // ELIMINAR CUENTA 🔥
+  // ELIMINAR CUENTA
   // ==========================
   const eliminarCuenta = () => {
     Alert.alert(
@@ -115,24 +149,12 @@ export default function PerfilScreen({ navigation }) {
               }
 
               await AsyncStorage.removeItem('currentUser');
-              await AsyncStorage.removeItem(`userImage-${user.celular}`);
 
-              Alert.alert(
-                'Cuenta eliminada',
-                'Tu cuenta fue eliminada correctamente',
-                [
-                  {
-                    text: 'OK',
-                    onPress: () =>
-                      navigation.reset({
-                        index: 0,
-                        routes: [{ name: 'Welcome' }],
-                      }),
-                  },
-                ]
-              );
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Welcome' }],
+              });
             } catch (error) {
-              console.log(error);
               Alert.alert('Error', 'No se pudo conectar con el servidor');
             }
           },
@@ -141,9 +163,6 @@ export default function PerfilScreen({ navigation }) {
     );
   };
 
-  // ==========================
-  // MODAL FOTO
-  // ==========================
   const abrirModal = () => {
     setModalVisible(true);
     scaleAnim.setValue(0);
@@ -158,139 +177,259 @@ export default function PerfilScreen({ navigation }) {
     }).start(() => setModalVisible(false));
   };
 
-  if (!user) return <Text style={{ textAlign: 'center', marginTop: 50 }}>Cargando...</Text>;
+  if (!user)
+    return <Text style={{ textAlign: 'center', marginTop: 50 }}>Cargando...</Text>;
 
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
-        <TouchableOpacity onPress={abrirModal} style={styles.imageWrapper}>
+
+      {/* HEADER VERDE */}
+      <View style={styles.header}>
+
+        <View style={styles.headerTopRow}>
+          <Text style={styles.slogan}>Ayudar {"\n"} es ayudar</Text>
+
           <Image
-            source={imagen ? { uri: imagen } : require('../assets/default-profile.png')}
-            style={styles.foto}
+            source={require('../assets/Logotipo_Negro-01.png')}
+            style={styles.headerLogo}
+            resizeMode="contain"
           />
-        </TouchableOpacity>
+        </View>
 
-        <Text style={styles.label}>Rol:</Text>
-        <Text style={styles.rol}>{user.rol}</Text>
+        <Image
+          source={require('../assets/Formas-Color-Negro_06.png')}
+          style={styles.iconTopLeft}
+          resizeMode="contain"
+        />
 
+        <Image
+          source={require('../assets/Formas-Color-Negro_03.png')}
+          style={styles.iconBottomRight}
+          resizeMode="contain"
+        />
+
+      </View>
+
+      {/* FOTO */}
+      <TouchableOpacity onPress={abrirModal} style={styles.imageWrapper}>
+        <Image
+          source={
+            imagen
+              ? { uri: imagen }
+              : require('../assets/default-profile.png')
+          }
+          style={styles.foto}
+        />
+      </TouchableOpacity>
+
+      {/* CARD */}
+      <View style={styles.card}>
         <Text style={styles.nombre}>
-          {user.nombres} {user.apellidoP} {user.apellidoM}
+          {user.nombres} {user.apellidoP}
         </Text>
 
-        <TouchableOpacity style={styles.boton} onPress={seleccionarImagen}>
-          <Text style={styles.botonFoto}>Cambiar Foto</Text>
+        <Text style={styles.rol}>{user.rol?.toUpperCase()}</Text>
+
+        <TouchableOpacity style={styles.botonFoto} onPress={seleccionarImagen}>
+          <Text style={styles.botonFotoTexto}>Cambiar Foto</Text>
         </TouchableOpacity>
 
-        <View style={styles.info}>
-          <Text style={styles.label}>Número Celular:</Text>
-          <Text style={styles.datos}>{user.celular}</Text>
+        <View style={styles.infoBox}>
+          <Text style={styles.infoLabel}>Celular</Text>
+          <Text style={styles.infoValue}>{user.celular}</Text>
 
-          <Text style={styles.label}>Dirección:</Text>
-          <Text style={styles.datos}>{user.direccion}</Text>
+          <Text style={styles.infoLabel}>Dirección</Text>
+          <Text style={styles.infoValue}>{user.direccion}</Text>
 
-          <Text style={styles.label}>Fecha de Nacimiento:</Text>
-          <Text style={styles.datos}>{user.fechaNac}</Text>
+          <Text style={styles.infoLabel}>Fecha de Nacimiento</Text>
+          <Text style={styles.infoValue}>{user.fechaNac}</Text>
         </View>
       </View>
 
-      {/* Cerrar sesión */}
       <TouchableOpacity style={styles.botonCerrar} onPress={cerrarSesion}>
-        <Text style={styles.botonTexto}>Cerrar Sesión</Text>
+        <Text style={styles.botonCerrarTexto}>Cerrar Sesión</Text>
       </TouchableOpacity>
 
-      {/* Eliminar cuenta */}
       <TouchableOpacity style={styles.botonEliminar} onPress={eliminarCuenta}>
         <Text style={styles.botonEliminarTexto}>Eliminar Cuenta</Text>
       </TouchableOpacity>
 
-      {/* <Text style={styles.version}>v1.0 Beta</Text> */}
-
-      {/* Modal imagen */}
       <Modal visible={modalVisible} transparent animationType="fade">
         <TouchableOpacity style={styles.modalFondo} activeOpacity={1} onPress={cerrarModal}>
           <Animated.Image
-            source={imagen ? { uri: imagen } : require('../assets/default-profile.png')}
+            source={
+              imagen
+                ? { uri: imagen }
+                : require('../assets/default-profile.png')
+            }
             style={[styles.modalImagen, { transform: [{ scale: scaleAnim }] }]}
             resizeMode="contain"
           />
         </TouchableOpacity>
       </Modal>
+
     </View>
   );
 }
 
-// ==========================
-// ESTILOS
-// ==========================
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000', padding: 30, justifyContent: 'center' },
-
-  card: {
-    width: '100%',
-    backgroundColor: '#ccff34',
-    borderRadius: 20,
-    paddingTop: 200,
-    paddingBottom: 15,
-    paddingHorizontal: 20,
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
     alignItems: 'center',
+  },
+
+  header: {
+    width: '100%',
+    height: 250,
+    backgroundColor: '#ccff34',
+    position: 'relative',
+  },
+
+  headerTopRow: {
+    position: 'absolute',
+    top: 110,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+
+  slogan: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+    marginRight: 12,
+  },
+
+  headerLogo: {
+    width: 100,
+    height: 65,
+  },
+
+  iconTopLeft: {
+    position: 'absolute',
+    top: 60,
+    left: 10,
+    width: 90,
+    height: 90,
+  },
+
+  iconBottomRight: {
+    position: 'absolute',
+    bottom: 0,
+    right: -30,
+    width: 90,
+    height: 90,
   },
 
   imageWrapper: {
     position: 'absolute',
-    top: 50,
-    borderRadius: 60,
+    top: 180,
+    borderRadius: 70,
     overflow: 'hidden',
     borderWidth: 4,
     borderColor: '#000',
+    elevation: 15,
   },
 
-  foto: { width: 120, height: 120, borderRadius: 60 },
+  foto: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+  },
 
-  nombre: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#000' },
-  rol: { fontSize: 18, marginBottom: 10 },
+  card: {
+    marginTop: 100,
+    width: '90%',
+    backgroundColor: '#121212',
+    borderRadius: 25,
+    padding: 25,
+    alignItems: 'center',
+  },
 
-  boton: {
-    backgroundColor: '#000',
+  nombre: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#ccff34',
+  },
+
+  rol: {
+    fontSize: 14,
+    color: '#aaa',
+    marginBottom: 15,
+  },
+
+  botonFoto: {
+    backgroundColor: '#ccff34',
     paddingVertical: 8,
-    paddingHorizontal: 20,
+    paddingHorizontal: 25,
     borderRadius: 20,
-    marginVertical: 10,
+    marginBottom: 20,
   },
 
-  botonFoto: { color: '#ccff34', fontWeight: 'bold' },
-
-  info: { alignSelf: 'stretch', marginTop: 10 },
-  label: { fontWeight: 'bold', marginTop: 10 },
-  datos: { color: '#00000099' },
-
-  botonCerrar: {
-    backgroundColor: '#ccff34',
-    paddingVertical: 10,
-    borderRadius: 25,
-    alignItems: 'center',
-    marginTop: 20,
+  botonFotoTexto: {
+    color: '#000',
+    fontWeight: 'bold',
   },
 
-  botonTexto: { fontWeight: 'bold', color: '#000' },
-
-  botonEliminar: {
-    backgroundColor: '#ccff34',
-    paddingVertical: 10,
-    borderRadius: 25,
-    alignItems: 'center',
+  infoBox: {
+    width: '100%',
     marginTop: 10,
   },
 
-  botonEliminarTexto: { color: '#000000', fontWeight: 'bold' },
+  infoLabel: {
+    color: '#888',
+    fontSize: 12,
+    marginTop: 10,
+  },
 
-  version: { position: 'absolute', bottom: 10, right: 20, color: '#999', fontSize: 12 },
+  infoValue: {
+    color: '#fff',
+    fontSize: 15,
+  },
+
+  botonCerrar: {
+    marginTop: 25,
+    backgroundColor: '#ccff34',
+    paddingVertical: 12,
+    width: '90%',
+    borderRadius: 30,
+    alignItems: 'center',
+  },
+
+  botonCerrarTexto: {
+    fontWeight: 'bold',
+    color: '#000',
+  },
+
+  botonEliminar: {
+    marginTop: 15,
+    backgroundColor: '#222',
+    paddingVertical: 12,
+    width: '90%',
+    borderRadius: 30,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccff34',
+  },
+
+  botonEliminarTexto: {
+    color: '#ccff34',
+    fontWeight: 'bold',
+  },
 
   modalFondo: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.85)',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  modalImagen: { width: width - 40, height: width - 40, borderRadius: 20 },
+  modalImagen: {
+    width: width - 40,
+    height: width - 40,
+    borderRadius: 20,
+  },
 });

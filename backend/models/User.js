@@ -9,8 +9,15 @@ const UserSchema = new mongoose.Schema({
   celular: { type: String, unique: true },
   password: String,
   rol: String,
-  codigo: String,       // <- código de verificación
-  verificado: { type: Boolean, default: false } // <- estado verificado
+  codigo: String,
+  verificado: { type: Boolean, default: false },
+
+  // 🔥 NUEVO CAMPO
+  foto: {
+    type: String,
+    default: null
+  }
+
 });
 
 module.exports = mongoose.model("User", UserSchema);

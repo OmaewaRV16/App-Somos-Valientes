@@ -51,8 +51,11 @@ export default function NoticiasScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchNoticias();
-    setRefreshing(false);
+    try {
+      await fetchNoticias();
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const abrirLink = async (url) => {
@@ -108,7 +111,7 @@ export default function NoticiasScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="#ccff34" />
-          <Text style={{ color: '#ccff34', marginTop: 10 }}>
+          <Text style={styles.loadingText}>
             Cargando noticias...
           </Text>
         </View>
@@ -126,21 +129,36 @@ export default function NoticiasScreen() {
         showsVerticalScrollIndicator={false}
         refreshing={refreshing}
         onRefresh={onRefresh}
+        progressViewOffset={20}
       />
     </SafeAreaView>
   );
 }
+
+/* ===========================
+   ESTILOS
+=========================== */
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 
   container: {
     padding: 20,
     paddingBottom: 40,
+  },
+
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  loadingText: {
+    color: '#ccff34',
+    marginTop: 10,
   },
 
   card: {
@@ -198,7 +216,7 @@ const styles = StyleSheet.create({
   },
 
   titulo: {
-    color: '#ffffff',
+    color: '#ccff34',
     fontSize: 23,
     fontWeight: 'bold',
   },
