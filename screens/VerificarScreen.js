@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -18,27 +18,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function VerificarScreen({ route, navigation }) {
-  const { celular } = route.params;
+  const { celular, codigoBackend } = route.params; // 👈 recibimos código aquí
   const [codigo, setCodigo] = useState('');
-  const [codigoBD, setCodigoBD] = useState(null);
-
-  // 🔹 TRAER CÓDIGO DESDE LA BD (Railway)
-  useEffect(() => {
-    const fetchCodigo = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/codigo/${celular}`);
-        const data = await response.json();
-
-        if (response.ok) {
-          setCodigoBD(data.codigo);
-        }
-      } catch (error) {
-        console.log('Error obteniendo código:', error);
-      }
-    };
-
-    fetchCodigo();
-  }, []);
 
   const handleVerificar = async () => {
     if (!codigo || codigo.length < 6) {
@@ -104,10 +85,10 @@ export default function VerificarScreen({ route, navigation }) {
               placeholder="Ingresa tu código"
             />
 
-            {/* 🔥 MOSTRAR CÓDIGO DE LA BD (SIMULADO) */}
-            {codigoBD && (
+            {/* 🔥 CÓDIGO TEMPORAL EN PANTALLA */}
+            {codigoBackend && (
               <Text style={styles.simulatedCode}>
-                Código actual en BD: {codigoBD}
+                Código temporal: {codigoBackend}
               </Text>
             )}
 
@@ -130,9 +111,6 @@ export default function VerificarScreen({ route, navigation }) {
   );
 }
 
-// ==========================
-// ESTILOS
-// ==========================
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,

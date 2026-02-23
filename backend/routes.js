@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const User = require("./models/User");
-const { enviarSMS } = require("./services/sms");
 
 // =====================
 // REGISTRO
@@ -44,8 +43,8 @@ router.post("/register", async (req, res) => {
     // 🔐 Hash de contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 🔢 Generar código OTP (backend)
-    const codigo = Math.floor(100000 + Math.random() * 900000);
+    // 🔢 Generar código OTP
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
     // 👤 Crear usuario
     const newUser = new User({
@@ -63,18 +62,10 @@ router.post("/register", async (req, res) => {
 
     await newUser.save();
 
-    // 📩 Enviar SMS con EL MISMO código
-    const smsEnviado = await enviarSMS(celular, codigo);
-
-    if (!smsEnviado) {
-      return res.status(500).json({
-        message: "No se pudo enviar el código de verificación por SMS"
-      });
-    }
-
-    // ✅ Respuesta limpia (sin código)
+    // 🔥 DEVOLVEMOS EL CÓDIGO AL FRONTEND (MODO DESARROLLO)
     res.status(201).json({
-      message: "Usuario registrado. Revisa tu SMS para verificar tu cuenta."
+      message: "Usuario registrado correctamente",
+      codigo
     });
 
   } catch (error) {
@@ -102,7 +93,7 @@ router.post("/verificar", async (req, res) => {
     if (user.verificado)
       return res.json({ message: "Usuario ya verificado" });
 
-    if (user.codigo == codigo) {
+    if (user.codigo === codigo) {
       user.verificado = true;
       user.codigo = null;
       await user.save();

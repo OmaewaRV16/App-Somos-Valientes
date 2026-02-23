@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   Alert,
-  Platform,
   TouchableWithoutFeedback,
   Keyboard
 } from 'react-native';
@@ -13,7 +12,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// ✅ BACKEND EN RAILWAY (PRODUCCIÓN)
+// ✅ BACKEND EN RAILWAY
 const API_URL = "https://app-somos-valientes-production.up.railway.app";
 
 export default function RegisterScreen({ navigation }) {
@@ -33,8 +32,16 @@ export default function RegisterScreen({ navigation }) {
     const cleaned = value.replace(/\D/g, "").slice(0, 8);
     let formatted = cleaned;
 
-    if (cleaned.length > 2) formatted = cleaned.slice(0, 2) + "-" + cleaned.slice(2);
-    if (cleaned.length > 4) formatted = cleaned.slice(0, 2) + "-" + cleaned.slice(2, 4) + "-" + cleaned.slice(4);
+    if (cleaned.length > 2)
+      formatted = cleaned.slice(0, 2) + "-" + cleaned.slice(2);
+
+    if (cleaned.length > 4)
+      formatted =
+        cleaned.slice(0, 2) +
+        "-" +
+        cleaned.slice(2, 4) +
+        "-" +
+        cleaned.slice(4);
 
     setFechaNac(formatted);
   };
@@ -92,9 +99,13 @@ export default function RegisterScreen({ navigation }) {
         return;
       }
 
-      // 👉 En pruebas se manda el código, luego será por SMS
-      const codigo = data.codigo;
-      navigation.navigate("VerificarScreen", { celular, codigo });
+      // 🔥 Recibimos el código desde backend
+      const codigoBackend = data.codigo || null;
+
+      navigation.navigate("VerificarScreen", {
+        celular,
+        codigoBackend
+      });
 
     } catch (error) {
       console.log(error);
