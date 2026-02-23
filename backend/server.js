@@ -7,7 +7,7 @@ const cuponesRoutes = require("./routes/cupones");
 const accionesRoutes = require("./routes/acciones");
 const comentariosRoutes = require("./routes/comentarios");
 const userRoutes = require("./routes/userRoutes");
-const noticiaRoutes = require("./routes/noticia"); // 🔥 NUEVO
+const noticiaRoutes = require("./routes/noticia"); // 👈 correcto
 
 const User = require("./models/User");
 const bcrypt = require("bcrypt");
@@ -38,7 +38,7 @@ app.get("/ping", (req, res) => {
 app.use("/api/cupones", cuponesRoutes);
 app.use("/api/acciones", accionesRoutes);
 app.use("/api/comentarios", comentariosRoutes);
-app.use("/api/noticia", noticiaRoutes); // 🔥 NUEVO
+app.use("/api/noticias", noticiaRoutes); // 🔥 AQUÍ ESTÁ EL FIX
 app.use("/api", userRoutes);
 
 // ==========================
@@ -83,7 +83,7 @@ const crearAdmin = async () => {
 connectDB()
   .then(() => {
     console.log("✅ MongoDB conectado");
-    crearAdmin(); // 🔥 Solo se ejecuta después de conectar
+    crearAdmin();
   })
   .catch((err) => {
     console.error("❌ Error conectando MongoDB:", err);
