@@ -51,6 +51,13 @@ const CuponSchema = new mongoose.Schema(
       default: "",
     },
 
+    // 🆕 NUEVA RED
+    tiktokSergio: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     facebookNegocio: {
       type: String,
       trim: true,

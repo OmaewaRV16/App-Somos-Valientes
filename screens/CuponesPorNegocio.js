@@ -2,18 +2,18 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Alert,
   FlatList,
   Image,
   Linking,
+  StyleSheet,
 } from 'react-native';
 
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function CuponesPorNegocio({ route }) {
-  const { negocio, user } = route.params;
+  const { negocio } = route.params;
   const [cupones, setCupones] = useState([]);
 
   useEffect(() => {
@@ -24,9 +24,7 @@ export default function CuponesPorNegocio({ route }) {
     try {
       const resp = await fetch(`${API_URL}/api/cupones`);
       const data = await resp.json();
-      const filtrados = data.filter(
-        (c) => c.nombre === negocio.nombre
-      );
+      const filtrados = data.filter(c => c.nombre === negocio.nombre);
       setCupones(filtrados);
     } catch (e) {
       Alert.alert('Error', 'No se pudieron cargar los cupones');
@@ -35,157 +33,175 @@ export default function CuponesPorNegocio({ route }) {
 
   const abrirLink = (url) => {
     if (!url) return;
-    Linking.openURL(url).catch(() =>
-      Alert.alert('Error', 'No se pudo abrir el enlace')
-    );
+    Linking.openURL(url);
   };
 
   const abrirWhatsApp = (whatsapp) => {
     if (!whatsapp) return;
-    const mensaje = 'Hola, vengo desde la app Sociedad Valiente 👋';
+    const mensaje = `Hola 😊 vengo desde Sociedad Valiente para hacer válido mi cupón en ${negocio.nombre}.`;
     const numero = whatsapp.replace(/\D/g, '');
-    const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
-    abrirLink(url);
+    Linking.openURL(`https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`);
   };
 
   const llamarTelefono = (numero) => {
     if (!numero) return;
-    const telefono = numero.replace(/\D/g, '');
-    abrirLink(`tel:${telefono}`);
+    Linking.openURL(`tel:${numero}`);
   };
 
   const renderItem = ({ item }) => {
-    const usado = item.usados?.includes(user.celular);
     const lineas = item.descripcion?.split('\n') || [];
 
     return (
-      <View style={[styles.card, usado && styles.canjeado]}>
+      <View style={{ marginBottom: 30 }}>
+        <View style={styles.card}>
 
-        {/* ENCABEZADO */}
-        <Text style={styles.tituloDescuento}>
-          🎁 Descuento exclusivo
-        </Text>
+          <Image
+            source={require('../assets/Formas-Color-Negro_06.png')}
+            style={styles.iconoSuperiorImg}
+          />
 
-        <Text style={styles.subtitulo}>
-          Válido en los siguientes servicios
-        </Text>
+          <Image
+            source={require('../assets/Formas-Color-Negro_03.png')}
+            style={styles.iconoInferiorImg}
+          />
 
-        <View style={styles.divider} />
+          <Text style={styles.tituloDescuento}>
+            Descuento válido {"\n"} en los siguientes servicios:
+          </Text>
 
-        {/* DESCRIPCIÓN */}
-        <Text style={styles.descripcionTitulo}>
-          {lineas[0]}
-        </Text>
+          {lineas.map((linea, index) => (
+            <Text
+              key={index}
+              style={[
+                styles.descripcion,
+                index < 2 ? styles.descripcionBold : styles.descripcionItalic
+              ]}
+            >
+              {linea}
+            </Text>
+          ))}
 
-        <Text style={styles.descripcion}>
-          {lineas.slice(1).join('\n')}
-        </Text>
+          {item.whatsapp && (
+            <View style={styles.contactoContainer}>
+              <Text style={styles.contactoTitulo}>
+                Canjea tu cupón al:
+              </Text>
 
-        {/* CÓDIGO */}
-        {usado && (
-          <View style={styles.codigoBox}>
-            <Text style={styles.codigoLabel}>Tu código</Text>
-            <Text style={styles.codigo}>{item.codigo}</Text>
-          </View>
-        )}
+              <View style={styles.iconosContactoRow}>
 
-        {/* CONTACTO */}
-        {item.whatsapp && (
-          <View style={styles.contactoContainer}>
-            <Text style={styles.seccionTitulo}>Contacto directo</Text>
+                <TouchableOpacity
+                  style={styles.contactoSimple}
+                  onPress={() => abrirWhatsApp(item.whatsapp)}
+                >
+                  <Image
+                    source={require('../assets/whatsapp.png')}
+                    style={styles.iconoContactoImg}
+                  />
+                  <Text style={styles.textoContacto}>WhatsApp</Text>
+                </TouchableOpacity>
 
-            <View style={styles.botonesContainer}>
-              <TouchableOpacity
-                style={styles.botonWhats}
-                onPress={() => abrirWhatsApp(item.whatsapp)}
-              >
-                <Image
-                  source={require('../assets/whatsapp.png')}
-                  style={styles.icono}
-                />
-                <Text style={styles.botonWhatsTexto}>WhatsApp</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.contactoSimple}
+                  onPress={() => llamarTelefono(item.whatsapp)}
+                >
+                  <Text style={styles.textoContacto}>Llamar</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.botonLlamar}
-                onPress={() => llamarTelefono(item.whatsapp)}
-              >
-                <Text style={styles.botonLlamarTexto}>Llamar</Text>
-              </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        )}
+          )}
 
-        {/* REDES SOCIALES */}
-        {(item.facebookSergio || item.instagramSergio || item.facebookNegocio) && (
-          <View style={styles.redesContainer}>
-            <Text style={styles.seccionTitulo}>Redes oficiales</Text>
-
-            {item.facebookSergio && (
-              <TouchableOpacity
-                style={styles.redItem}
-                onPress={() => abrirLink(item.facebookSergio)}
-              >
-                <Image
-                  source={require('../assets/facebook.png')}
-                  style={styles.redIcon}
-                />
-                <Text style={styles.redText}>Facebook de Sergio Vadillo</Text>
-              </TouchableOpacity>
-            )}
-
-            {item.instagramSergio && (
-              <TouchableOpacity
-                style={styles.redItem}
-                onPress={() => abrirLink(item.instagramSergio)}
-              >
-                <Image
-                  source={require('../assets/instagram.png')}
-                  style={styles.redIcon}
-                />
-                <Text style={styles.redText}>Instagram de Sergio Vadillo</Text>
-              </TouchableOpacity>
-            )}
-
-            {item.facebookNegocio && (
-              <TouchableOpacity
-                style={styles.redItem}
-                onPress={() => abrirLink(item.facebookNegocio)}
-              >
-                <Image
-                  source={require('../assets/facebook.png')}
-                  style={styles.redIcon}
-                />
-                <Text style={styles.redText}>Facebook del Negocio</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-
+        </View>
       </View>
     );
   };
 
   return (
     <View style={styles.container}>
+
       <View style={styles.headerContainer}>
         <Text style={styles.header}>{negocio.nombre}</Text>
 
-        {negocio.logo ? (
-          <Image source={{ uri: negocio.logo }} style={styles.logo} />
-        ) : (
-          <View style={styles.logoPlaceholder}>
-            <Text style={styles.logoPlaceholderText}>SV</Text>
+        <View style={styles.requisitoCard}>
+
+          {negocio.logo && (
+            <Image
+              source={{ uri: negocio.logo }}
+              style={styles.logoValidacion}
+            />
+          )}
+
+          <View style={styles.redesContainer}>
+
+            {/* REDES SERGIO */}
+            <Text style={styles.requisitoTitulo}>
+              Sigue las redes de Sergio para validar tu cupón:
+            </Text>
+
+            <View style={styles.redesRow}>
+
+              {cupones[0]?.facebookSergio && (
+                <TouchableOpacity onPress={() => abrirLink(cupones[0].facebookSergio)}>
+                  <Image
+                    source={require('../assets/facebook.png')}
+                    style={styles.iconoRed}
+                  />
+                </TouchableOpacity>
+              )}
+
+              {cupones[0]?.instagramSergio && (
+                <TouchableOpacity onPress={() => abrirLink(cupones[0].instagramSergio)}>
+                  <Image
+                    source={require('../assets/instagram.png')}
+                    style={styles.iconoRed}
+                  />
+                </TouchableOpacity>
+              )}
+
+              {cupones[0]?.tiktokSergio && (
+                <TouchableOpacity onPress={() => abrirLink(cupones[0].tiktokSergio)}>
+                  <Image
+                    source={require('../assets/tiktok.png')}
+                    style={styles.iconoRed}
+                  />
+                </TouchableOpacity>
+              )}
+
+            </View>
+
+            {/* REDES NEGOCIO */}
+            {cupones[0]?.facebookNegocio && (
+              <>
+                <Text style={[styles.requisitoTitulo, { marginTop: 12 }]}>
+                  También sigue a {negocio.nombre}:
+                </Text>
+
+                <View style={styles.redesRow}>
+                  <TouchableOpacity
+                    onPress={() => abrirLink(cupones[0].facebookNegocio)}
+                  >
+                    <Image
+                      source={require('../assets/facebook.png')}
+                      style={styles.iconoRed}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+
           </View>
-        )}
+
+        </View>
       </View>
 
       <FlatList
         data={cupones}
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 60 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
       />
+
     </View>
   );
 }
@@ -195,182 +211,140 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
-    padding: 15,
+    paddingHorizontal: 20,
   },
 
   headerContainer: {
-    alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 25,
+    marginTop: 10,
   },
 
   header: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#ccff34',
     marginBottom: 20,
+    textAlign: 'center',
   },
 
-  logo: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    borderWidth: 4,
-    borderColor: '#ccff34',
-  },
-
-  logoPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 4,
-    borderColor: '#ccff34',
-    justifyContent: 'center',
+  requisitoCard: {
+    backgroundColor: '#ccff34',
+    padding: 20,
+    flexDirection: 'row',
     alignItems: 'center',
   },
 
-  logoPlaceholderText: {
-    color: '#ccff34',
-    fontSize: 22,
+  logoValidacion: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    marginRight: 15,
+  },
+
+  redesContainer: {
+    flex: 1,
+    flexShrink: 1,
+  },
+
+  requisitoTitulo: {
+    color: '#000',
     fontWeight: 'bold',
+    fontSize: 13,
+    marginBottom: 8,
+    flexWrap: 'wrap',
+    flexShrink: 1,
+  },
+
+  redesRow: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+
+  iconoRed: {
+    width: 28,
+    height: 28,
   },
 
   card: {
     backgroundColor: '#ccff34',
-    borderRadius: 25,
-    padding: 25,
-    marginBottom: 25,
-    elevation: 10,
+    paddingVertical: 18,
+    paddingHorizontal: 15,
+    position: 'relative',
   },
 
-  canjeado: {
-    opacity: 0.9,
+  iconoSuperiorImg: {
+    position: 'absolute',
+    top: -10,
+    left: -10,
+    width: 60,
+    height: 60,
+    resizeMode: 'contain',
+  },
+
+  iconoInferiorImg: {
+    position: 'absolute',
+    bottom: 0,
+    right: -15,
+    width: 60,
+    height: 60,
+    resizeMode: 'contain',
   },
 
   tituloDescuento: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#000',
-  },
-
-  subtitulo: {
-    textAlign: 'center',
-    fontSize: 13,
-    color: '#000',
-    marginBottom: 10,
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: '#000',
-    opacity: 0.2,
-    marginVertical: 15,
-  },
-
-  descripcionTitulo: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-    textAlign: 'center',
-    marginBottom: 10,
+    paddingVertical: 10,
   },
 
   descripcion: {
-    fontSize: 14,
-    color: '#333',
-    lineHeight: 22,
-    marginBottom: 15,
+    fontSize: 13,
+    color: '#111',
+    lineHeight: 20,
+    textAlign: 'left',
   },
 
-  codigoBox: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 15,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-
-  codigoLabel: {
-    color: '#666',
-  },
-
-  codigo: {
-    fontSize: 28,
+  descripcionBold: {
     fontWeight: 'bold',
   },
 
-  seccionTitulo: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#000',
+  descripcionItalic: {
+    fontStyle: 'italic',
+    fontSize: 12,
   },
 
   contactoContainer: {
     marginTop: 15,
-  },
-
-  botonesContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10,
-  },
-
-  botonWhats: {
-    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#000',
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 15,
   },
 
-  botonWhatsTexto: {
-    color: '#ccff34',
+  contactoTitulo: {
+    fontSize: 14,
     fontWeight: 'bold',
-  },
-
-  botonLlamar: {
-    backgroundColor: '#111',
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 15,
-  },
-
-  botonLlamarTexto: {
-    color: '#ccff34',
-    fontWeight: 'bold',
-  },
-
-  icono: {
-    width: 20,
-    height: 20,
-    marginRight: 8,
-  },
-
-  redesContainer: {
-    marginTop: 20,
-  },
-
-  redItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#000',
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    borderRadius: 15,
     marginBottom: 10,
   },
 
-  redIcon: {
-    width: 20,
-    height: 20,
+  iconosContactoRow: {
+    flexDirection: 'row',
+    gap: 25,
   },
 
-  redText: {
-    color: '#ccff34',
-    marginLeft: 10,
+  contactoSimple: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  iconoContactoImg: {
+    width: 20,
+    height: 20,
+    marginRight: 6,
+  },
+
+  textoContacto: {
+    fontSize: 13,
     fontWeight: 'bold',
+    color: '#000',
   },
 
 });
