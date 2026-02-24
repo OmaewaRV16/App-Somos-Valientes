@@ -34,9 +34,9 @@ export default function CrearCupon({ navigation }) {
   const [categoria, setCategoria] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
 
-  // 🔥 NUEVOS CAMPOS
+  // 🔥 REDES DEFINITIVAS
   const [facebookSergio, setFacebookSergio] = useState('');
-  const [facebookSociedad, setFacebookSociedad] = useState('');
+  const [instagramSergio, setInstagramSergio] = useState('');
   const [facebookNegocio, setFacebookNegocio] = useState('');
 
   const guardar = async () => {
@@ -56,13 +56,13 @@ export default function CrearCupon({ navigation }) {
         descripcion: descripcion.trim(),
         codigo: codigo.trim(),
         categoria,
-        logo: logo.trim() || null,
-        whatsapp: whatsapp.trim() || null,
+        logo: logo.trim() || "",
+        whatsapp: whatsapp.trim() || "",
 
         // 🔥 REDES
-        facebookSergio: facebookSergio.trim() || null,
-        facebookSociedad: facebookSociedad.trim() || null,
-        facebookNegocio: facebookNegocio.trim() || null,
+        facebookSergio: facebookSergio.trim() || "",
+        instagramSergio: instagramSergio.trim() || "",
+        facebookNegocio: facebookNegocio.trim() || "",
       };
 
       const res = await fetch(`${API_URL}/api/cupones`, {
@@ -155,7 +155,7 @@ export default function CrearCupon({ navigation }) {
           keyboardType="phone-pad"
         />
 
-        {/* 🔥 REDES SOCIALES */}
+        {/* 🔵 REDES */}
         <Text style={styles.label}>Facebook de Sergio (opcional)</Text>
         <TextInput
           value={facebookSergio}
@@ -166,12 +166,12 @@ export default function CrearCupon({ navigation }) {
           autoCapitalize="none"
         />
 
-        <Text style={styles.label}>Facebook Sociedad Valiente (opcional)</Text>
+        <Text style={styles.label}>Instagram de Sergio (opcional)</Text>
         <TextInput
-          value={facebookSociedad}
-          onChangeText={setFacebookSociedad}
+          value={instagramSergio}
+          onChangeText={setInstagramSergio}
           style={styles.input}
-          placeholder="https://facebook.com/..."
+          placeholder="https://instagram.com/..."
           placeholderTextColor="#999"
           autoCapitalize="none"
         />

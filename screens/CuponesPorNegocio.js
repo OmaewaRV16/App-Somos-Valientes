@@ -117,7 +117,7 @@ export default function CuponesPorNegocio({ route }) {
         )}
 
         {/* REDES SOCIALES */}
-        {(item.facebookSergio || item.facebookSociedad || item.facebookNegocio) && (
+        {(item.facebookSergio || item.instagramSergio || item.facebookNegocio) && (
           <View style={styles.redesContainer}>
             <Text style={styles.seccionTitulo}>Redes oficiales</Text>
 
@@ -130,20 +130,20 @@ export default function CuponesPorNegocio({ route }) {
                   source={require('../assets/facebook.png')}
                   style={styles.redIcon}
                 />
-                <Text style={styles.redText}>Facebook de Sergio</Text>
+                <Text style={styles.redText}>Facebook de Sergio Vadillo</Text>
               </TouchableOpacity>
             )}
 
-            {item.facebookSociedad && (
+            {item.instagramSergio && (
               <TouchableOpacity
                 style={styles.redItem}
-                onPress={() => abrirLink(item.facebookSociedad)}
+                onPress={() => abrirLink(item.instagramSergio)}
               >
                 <Image
-                  source={require('../assets/facebook.png')}
+                  source={require('../assets/instagram.png')}
                   style={styles.redIcon}
                 />
-                <Text style={styles.redText}>Sociedad Valiente</Text>
+                <Text style={styles.redText}>Instagram de Sergio Vadillo</Text>
               </TouchableOpacity>
             )}
 

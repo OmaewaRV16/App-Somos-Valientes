@@ -36,9 +36,9 @@ export default function EditarCupon({ route, navigation }) {
   const [categoria, setCategoria] = useState(cupon?.categoria || '');
   const [whatsapp, setWhatsapp] = useState(cupon?.whatsapp || '');
 
-  // 🔥 NUEVOS CAMPOS REDES
+  // 🔥 REDES DEFINITIVAS
   const [facebookSergio, setFacebookSergio] = useState(cupon?.facebookSergio || '');
-  const [facebookSociedad, setFacebookSociedad] = useState(cupon?.facebookSociedad || '');
+  const [instagramSergio, setInstagramSergio] = useState(cupon?.instagramSergio || '');
   const [facebookNegocio, setFacebookNegocio] = useState(cupon?.facebookNegocio || '');
 
   const guardarCambios = async () => {
@@ -58,13 +58,12 @@ export default function EditarCupon({ route, navigation }) {
         descripcion: descripcion.trim(),
         codigo: codigo.trim(),
         categoria,
-        logo: logo.trim() || null,
-        whatsapp: whatsapp.trim() || null,
+        logo: logo.trim() || "",
+        whatsapp: whatsapp.trim() || "",
 
-        // 🔥 REDES
-        facebookSergio: facebookSergio.trim() || null,
-        facebookSociedad: facebookSociedad.trim() || null,
-        facebookNegocio: facebookNegocio.trim() || null,
+        facebookSergio: facebookSergio.trim() || "",
+        instagramSergio: instagramSergio.trim() || "",
+        facebookNegocio: facebookNegocio.trim() || "",
       };
 
       const res = await fetch(
@@ -156,7 +155,7 @@ export default function EditarCupon({ route, navigation }) {
           placeholderTextColor="#999"
         />
 
-        {/* 🔥 REDES SOCIALES */}
+        {/* 🔵 REDES */}
         <Text style={styles.label}>Facebook de Sergio (opcional)</Text>
         <TextInput
           value={facebookSergio}
@@ -167,13 +166,13 @@ export default function EditarCupon({ route, navigation }) {
           placeholderTextColor="#999"
         />
 
-        <Text style={styles.label}>Facebook Sociedad Valiente (opcional)</Text>
+        <Text style={styles.label}>Instagram de Sergio (opcional)</Text>
         <TextInput
-          value={facebookSociedad}
-          onChangeText={setFacebookSociedad}
+          value={instagramSergio}
+          onChangeText={setInstagramSergio}
           style={styles.input}
           autoCapitalize="none"
-          placeholder="https://facebook.com/..."
+          placeholder="https://instagram.com/..."
           placeholderTextColor="#999"
         />
 

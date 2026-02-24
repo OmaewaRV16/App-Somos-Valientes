@@ -4,24 +4,24 @@ const CuponSchema = new mongoose.Schema(
   {
     nombre: {
       type: String,
-      required: true, // Nombre del negocio
+      required: true,
       trim: true,
     },
 
     descripcion: {
       type: String,
-      required: true, // Descripción del cupón
+      required: true,
       trim: true,
     },
 
     codigo: {
       type: String,
-      required: true, // Código del cupón
+      required: true,
       trim: true,
     },
 
     logo: {
-      type: String, // URL del logo (opcional)
+      type: String,
       trim: true,
       default: "",
     },
@@ -33,19 +33,19 @@ const CuponSchema = new mongoose.Schema(
     },
 
     whatsapp: {
-      type: String, // Número o link de WhatsApp
+      type: String,
       trim: true,
       default: "",
     },
 
-    // 🔵 REDES SOCIALES
+    // 🔵 REDES DEFINITIVAS
     facebookSergio: {
       type: String,
       trim: true,
       default: "",
     },
 
-    facebookSociedad: {
+    instagramSergio: {
       type: String,
       trim: true,
       default: "",
@@ -59,13 +59,13 @@ const CuponSchema = new mongoose.Schema(
 
     usados: [
       {
-        type: String, // Celulares que ya canjearon el cupón
+        type: String,
         trim: true,
       },
     ],
   },
   {
-    timestamps: true, // createdAt / updatedAt
+    timestamps: true,
   }
 );
 

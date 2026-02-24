@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
 });
 
 // =========================
-// CREAR CUPÓN (CON REDES)
+// CREAR CUPÓN
 // =========================
 router.post("/", async (req, res) => {
   const {
@@ -27,7 +27,7 @@ router.post("/", async (req, res) => {
     categoria,
     whatsapp,
     facebookSergio,
-    facebookSociedad,
+    instagramSergio,
     facebookNegocio,
   } = req.body;
 
@@ -46,7 +46,7 @@ router.post("/", async (req, res) => {
       categoria: categoria.trim(),
       whatsapp: whatsapp?.trim() || "",
       facebookSergio: facebookSergio?.trim() || "",
-      facebookSociedad: facebookSociedad?.trim() || "",
+      instagramSergio: instagramSergio?.trim() || "",
       facebookNegocio: facebookNegocio?.trim() || "",
       usados: [],
     });
@@ -71,7 +71,7 @@ router.put("/:id", async (req, res) => {
     categoria,
     whatsapp,
     facebookSergio,
-    facebookSociedad,
+    instagramSergio,
     facebookNegocio,
   } = req.body;
 
@@ -82,12 +82,12 @@ router.put("/:id", async (req, res) => {
         nombre: nombre?.trim(),
         descripcion: descripcion?.trim(),
         codigo: codigo?.trim(),
-        logo: logo?.trim(),
+        logo: logo?.trim() || "",
         categoria: categoria?.trim(),
-        whatsapp: whatsapp?.trim(),
-        facebookSergio: facebookSergio?.trim(),
-        facebookSociedad: facebookSociedad?.trim(),
-        facebookNegocio: facebookNegocio?.trim(),
+        whatsapp: whatsapp?.trim() || "",
+        facebookSergio: facebookSergio?.trim() || "",
+        instagramSergio: instagramSergio?.trim() || "",
+        facebookNegocio: facebookNegocio?.trim() || "",
       },
       { new: true }
     );
