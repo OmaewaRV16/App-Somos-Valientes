@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
 });
 
 // =========================
-// CREAR CUPÓN (LOGO + CATEGORÍA + WHATSAPP) ✅
+// CREAR CUPÓN (CON REDES)
 // =========================
 router.post("/", async (req, res) => {
   const {
@@ -25,7 +25,10 @@ router.post("/", async (req, res) => {
     codigo,
     logo,
     categoria,
-    whatsapp, // 👈 NUEVO
+    whatsapp,
+    facebookSergio,
+    facebookSociedad,
+    facebookNegocio,
   } = req.body;
 
   if (!nombre || !descripcion || !codigo || !categoria) {
@@ -39,9 +42,12 @@ router.post("/", async (req, res) => {
       nombre: nombre.trim(),
       descripcion: descripcion.trim(),
       codigo: codigo.trim(),
-      logo: logo?.trim(),
+      logo: logo?.trim() || "",
       categoria: categoria.trim(),
-      whatsapp: whatsapp?.trim(), // 👈 SE GUARDA
+      whatsapp: whatsapp?.trim() || "",
+      facebookSergio: facebookSergio?.trim() || "",
+      facebookSociedad: facebookSociedad?.trim() || "",
+      facebookNegocio: facebookNegocio?.trim() || "",
       usados: [],
     });
 
@@ -54,7 +60,7 @@ router.post("/", async (req, res) => {
 });
 
 // =========================
-// EDITAR CUPÓN (LOGO + CATEGORÍA + WHATSAPP)
+// EDITAR CUPÓN
 // =========================
 router.put("/:id", async (req, res) => {
   const {
@@ -63,7 +69,10 @@ router.put("/:id", async (req, res) => {
     codigo,
     logo,
     categoria,
-    whatsapp, // 👈 NUEVO
+    whatsapp,
+    facebookSergio,
+    facebookSociedad,
+    facebookNegocio,
   } = req.body;
 
   try {
@@ -75,7 +84,10 @@ router.put("/:id", async (req, res) => {
         codigo: codigo?.trim(),
         logo: logo?.trim(),
         categoria: categoria?.trim(),
-        whatsapp: whatsapp?.trim(), // 👈 SE ACTUALIZA
+        whatsapp: whatsapp?.trim(),
+        facebookSergio: facebookSergio?.trim(),
+        facebookSociedad: facebookSociedad?.trim(),
+        facebookNegocio: facebookNegocio?.trim(),
       },
       { new: true }
     );
@@ -110,7 +122,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 // =========================
-// CANJEAR CUPÓN (POR ID)
+// CANJEAR CUPÓN
 // =========================
 router.patch("/:id/canjear", async (req, res) => {
   const { celular } = req.body;

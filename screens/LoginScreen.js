@@ -12,13 +12,12 @@ import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// ✅ URL PRODUCCIÓN (Railway)
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function LoginScreen({ navigation }) {
   const [celular, setCelular] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false); // 👈 evita dobles taps
+  const [loading, setLoading] = useState(false);
 
   const formatCelular = (value) => {
     const numbers = value.replace(/\D/g, '').slice(0, 10);
@@ -41,7 +40,8 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/login`, {
+      // 🔥 CORRECCIÓN AQUÍ
+      const response = await fetch(`${API_URL}/api/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ celular, password }),
@@ -59,10 +59,8 @@ export default function LoginScreen({ navigation }) {
 
       const user = data.user;
 
-      // ✅ GUARDAR SESIÓN (persistencia)
       await AsyncStorage.setItem('currentUser', JSON.stringify(user));
 
-      // ✅ REDIRECCIÓN LIMPIA (sin volver atrás)
       if (user.rol === 'participante') {
         navigation.reset({
           index: 0,
@@ -82,7 +80,7 @@ export default function LoginScreen({ navigation }) {
         Alert.alert('Error', 'Rol no reconocido');
       }
     } catch (error) {
-      console.log(error);
+      console.log('Login error:', error);
       Alert.alert('Error', 'No se pudo conectar con el servidor');
     } finally {
       setLoading(false);

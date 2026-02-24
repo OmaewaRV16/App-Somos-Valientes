@@ -12,10 +12,8 @@ import {
   Platform,
 } from 'react-native';
 
-// ✅ URL PRODUCCIÓN
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
-// 🔹 CATEGORÍAS DISPONIBLES
 const CATEGORIAS = [
   'Restaurantes',
   'Salud',
@@ -36,10 +34,14 @@ export default function EditarCupon({ route, navigation }) {
   const [codigo, setCodigo] = useState(cupon?.codigo || '');
   const [logo, setLogo] = useState(cupon?.logo || '');
   const [categoria, setCategoria] = useState(cupon?.categoria || '');
-  const [whatsapp, setWhatsapp] = useState(cupon?.whatsapp || ''); // 👈 OPCIONAL
+  const [whatsapp, setWhatsapp] = useState(cupon?.whatsapp || '');
+
+  // 🔥 NUEVOS CAMPOS REDES
+  const [facebookSergio, setFacebookSergio] = useState(cupon?.facebookSergio || '');
+  const [facebookSociedad, setFacebookSociedad] = useState(cupon?.facebookSociedad || '');
+  const [facebookNegocio, setFacebookNegocio] = useState(cupon?.facebookNegocio || '');
 
   const guardarCambios = async () => {
-    // ✅ SOLO ESTOS CAMPOS SON OBLIGATORIOS
     if (
       !nombre.trim() ||
       !descripcion.trim() ||
@@ -56,8 +58,13 @@ export default function EditarCupon({ route, navigation }) {
         descripcion: descripcion.trim(),
         codigo: codigo.trim(),
         categoria,
-        logo: logo.trim() || null,        // 👈 opcional
-        whatsapp: whatsapp.trim() || null // 👈 opcional
+        logo: logo.trim() || null,
+        whatsapp: whatsapp.trim() || null,
+
+        // 🔥 REDES
+        facebookSergio: facebookSergio.trim() || null,
+        facebookSociedad: facebookSociedad.trim() || null,
+        facebookNegocio: facebookNegocio.trim() || null,
       };
 
       const res = await fetch(
@@ -93,7 +100,6 @@ export default function EditarCupon({ route, navigation }) {
       >
         <Text style={styles.titulo}>Editar Cupón</Text>
 
-        {/* PREVIEW LOGO */}
         <View style={styles.logoContainer}>
           {logo ? (
             <Image source={{ uri: logo }} style={styles.logo} />
@@ -104,7 +110,6 @@ export default function EditarCupon({ route, navigation }) {
           )}
         </View>
 
-        {/* NOMBRE */}
         <Text style={styles.label}>Nombre del negocio *</Text>
         <TextInput
           value={nombre}
@@ -114,52 +119,74 @@ export default function EditarCupon({ route, navigation }) {
           placeholderTextColor="#999"
         />
 
-        {/* DESCRIPCIÓN */}
         <Text style={styles.label}>Descripción *</Text>
         <TextInput
           value={descripcion}
           onChangeText={setDescripcion}
           style={[styles.input, { height: 90 }]}
-          placeholder="Primera línea como título y luego la descripción"
-          placeholderTextColor="#999"
           multiline
+          placeholderTextColor="#999"
         />
 
-        {/* CÓDIGO */}
         <Text style={styles.label}>Código *</Text>
         <TextInput
           value={codigo}
           onChangeText={setCodigo}
           style={styles.input}
-          placeholder="SV2025"
-          placeholderTextColor="#999"
           autoCapitalize="characters"
+          placeholderTextColor="#999"
         />
 
-        {/* LOGO (OPCIONAL) */}
         <Text style={styles.label}>URL del logo (opcional)</Text>
         <TextInput
           value={logo}
           onChangeText={setLogo}
           style={styles.input}
-          placeholder="https://..."
-          placeholderTextColor="#999"
           autoCapitalize="none"
           keyboardType="url"
+          placeholderTextColor="#999"
         />
 
-        {/* WHATSAPP (OPCIONAL) */}
         <Text style={styles.label}>WhatsApp del negocio (opcional)</Text>
         <TextInput
           value={whatsapp}
           onChangeText={setWhatsapp}
           style={styles.input}
-          placeholder="Ej. 9991234567 o link"
-          placeholderTextColor="#999"
           keyboardType="phone-pad"
+          placeholderTextColor="#999"
         />
 
-        {/* CATEGORÍA */}
+        {/* 🔥 REDES SOCIALES */}
+        <Text style={styles.label}>Facebook de Sergio (opcional)</Text>
+        <TextInput
+          value={facebookSergio}
+          onChangeText={setFacebookSergio}
+          style={styles.input}
+          autoCapitalize="none"
+          placeholder="https://facebook.com/..."
+          placeholderTextColor="#999"
+        />
+
+        <Text style={styles.label}>Facebook Sociedad Valiente (opcional)</Text>
+        <TextInput
+          value={facebookSociedad}
+          onChangeText={setFacebookSociedad}
+          style={styles.input}
+          autoCapitalize="none"
+          placeholder="https://facebook.com/..."
+          placeholderTextColor="#999"
+        />
+
+        <Text style={styles.label}>Facebook del Negocio (opcional)</Text>
+        <TextInput
+          value={facebookNegocio}
+          onChangeText={setFacebookNegocio}
+          style={styles.input}
+          autoCapitalize="none"
+          placeholder="https://facebook.com/..."
+          placeholderTextColor="#999"
+        />
+
         <Text style={styles.label}>Categoría *</Text>
         <View style={styles.categoriasContainer}>
           {CATEGORIAS.map((cat) => (
@@ -183,7 +210,6 @@ export default function EditarCupon({ route, navigation }) {
           ))}
         </View>
 
-        {/* GUARDAR */}
         <TouchableOpacity style={styles.boton} onPress={guardarCambios}>
           <Text style={styles.botonTexto}>Guardar Cambios</Text>
         </TouchableOpacity>
@@ -192,16 +218,12 @@ export default function EditarCupon({ route, navigation }) {
   );
 }
 
-/* =======================
-   ESTILOS
-======================= */
 const styles = StyleSheet.create({
   container: {
     padding: 30,
     backgroundColor: '#000',
     flexGrow: 1,
   },
-
   titulo: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -209,7 +231,6 @@ const styles = StyleSheet.create({
     color: '#ccff34',
     textAlign: 'center',
   },
-
   logoContainer: {
     alignItems: 'center',
     marginBottom: 20,
@@ -237,24 +258,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 22,
   },
-
   label: {
     fontSize: 16,
     marginBottom: 6,
     color: '#ccff34',
     fontWeight: 'bold',
   },
-
   input: {
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 14,
     fontSize: 16,
     marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#ddd',
   },
-
   categoriasContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -279,7 +295,6 @@ const styles = StyleSheet.create({
   categoriaTextoActivo: {
     color: '#000',
   },
-
   boton: {
     backgroundColor: '#ccff34',
     paddingVertical: 16,

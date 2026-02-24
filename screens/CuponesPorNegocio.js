@@ -14,7 +14,6 @@ const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function CuponesPorNegocio({ route }) {
   const { negocio, user } = route.params;
-
   const [cupones, setCupones] = useState([]);
 
   useEffect(() => {
@@ -25,51 +24,34 @@ export default function CuponesPorNegocio({ route }) {
     try {
       const resp = await fetch(`${API_URL}/api/cupones`);
       const data = await resp.json();
-
       const filtrados = data.filter(
         (c) => c.nombre === negocio.nombre
       );
-
       setCupones(filtrados);
     } catch (e) {
       Alert.alert('Error', 'No se pudieron cargar los cupones');
     }
   };
 
-  const abrirWhatsApp = (whatsapp) => {
-    if (!whatsapp) return;
-
-    const mensaje = 'Hola, vengo desde la app Sociedad Valiente 👋';
-
-    const url = whatsapp.startsWith('http')
-      ? whatsapp
-      : `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensaje)}`;
-
+  const abrirLink = (url) => {
+    if (!url) return;
     Linking.openURL(url).catch(() =>
-      Alert.alert('Error', 'No se pudo abrir WhatsApp')
+      Alert.alert('Error', 'No se pudo abrir el enlace')
     );
   };
 
-  const canjearCupon = async (cupon) => {
-    if (cupon.usados?.includes(user.celular)) return;
+  const abrirWhatsApp = (whatsapp) => {
+    if (!whatsapp) return;
+    const mensaje = 'Hola, vengo desde la app Sociedad Valiente 👋';
+    const numero = whatsapp.replace(/\D/g, '');
+    const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+    abrirLink(url);
+  };
 
-    try {
-      const resp = await fetch(
-        `${API_URL}/api/cupones/${cupon._id}/canjear`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ celular: user.celular }),
-        }
-      );
-
-      if (!resp.ok) throw new Error();
-
-      Alert.alert('Cupón canjeado', 'Muestra este código en el negocio');
-      cargarCupones();
-    } catch {
-      Alert.alert('Error', 'No se pudo canjear el cupón');
-    }
+  const llamarTelefono = (numero) => {
+    if (!numero) return;
+    const telefono = numero.replace(/\D/g, '');
+    abrirLink(`tel:${telefono}`);
   };
 
   const renderItem = ({ item }) => {
@@ -78,15 +60,28 @@ export default function CuponesPorNegocio({ route }) {
 
     return (
       <View style={[styles.card, usado && styles.canjeado]}>
+
+        {/* ENCABEZADO */}
+        <Text style={styles.tituloDescuento}>
+          🎁 Descuento exclusivo
+        </Text>
+
+        <Text style={styles.subtitulo}>
+          Válido en los siguientes servicios
+        </Text>
+
+        <View style={styles.divider} />
+
         {/* DESCRIPCIÓN */}
+        <Text style={styles.descripcionTitulo}>
+          {lineas[0]}
+        </Text>
+
         <Text style={styles.descripcion}>
-          <Text style={styles.descripcionTitulo}>
-            {lineas[0]}
-            {'\n'}
-          </Text>
           {lineas.slice(1).join('\n')}
         </Text>
 
+        {/* CÓDIGO */}
         {usado && (
           <View style={styles.codigoBox}>
             <Text style={styles.codigoLabel}>Tu código</Text>
@@ -94,37 +89,85 @@ export default function CuponesPorNegocio({ route }) {
           </View>
         )}
 
-        {!usado && (
-          <TouchableOpacity
-            style={styles.boton}
-            onPress={() => canjearCupon(item)}
-          >
-            {/* <Text style={styles.botonTexto}>Canjear Cupón</Text> */}
-          </TouchableOpacity>
-        )}
-
-        {/* BOTÓN WHATSAPP SOLO SI EXISTE */}
+        {/* CONTACTO */}
         {item.whatsapp && (
-          <TouchableOpacity
-            style={styles.botonWhats}
-            onPress={() => abrirWhatsApp(item.whatsapp)}
-          >
-            <Text style={styles.botonWhatsTexto}>
-              Canjear Cupón por WhatsApp
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.contactoContainer}>
+            <Text style={styles.seccionTitulo}>Contacto directo</Text>
+
+            <View style={styles.botonesContainer}>
+              <TouchableOpacity
+                style={styles.botonWhats}
+                onPress={() => abrirWhatsApp(item.whatsapp)}
+              >
+                <Image
+                  source={require('../assets/whatsapp.png')}
+                  style={styles.icono}
+                />
+                <Text style={styles.botonWhatsTexto}>WhatsApp</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.botonLlamar}
+                onPress={() => llamarTelefono(item.whatsapp)}
+              >
+                <Text style={styles.botonLlamarTexto}>Llamar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
 
-        {usado && (
-          <Text style={styles.usadoTexto}>✅ Ya canjeado</Text>
+        {/* REDES SOCIALES */}
+        {(item.facebookSergio || item.facebookSociedad || item.facebookNegocio) && (
+          <View style={styles.redesContainer}>
+            <Text style={styles.seccionTitulo}>Redes oficiales</Text>
+
+            {item.facebookSergio && (
+              <TouchableOpacity
+                style={styles.redItem}
+                onPress={() => abrirLink(item.facebookSergio)}
+              >
+                <Image
+                  source={require('../assets/facebook.png')}
+                  style={styles.redIcon}
+                />
+                <Text style={styles.redText}>Facebook de Sergio</Text>
+              </TouchableOpacity>
+            )}
+
+            {item.facebookSociedad && (
+              <TouchableOpacity
+                style={styles.redItem}
+                onPress={() => abrirLink(item.facebookSociedad)}
+              >
+                <Image
+                  source={require('../assets/facebook.png')}
+                  style={styles.redIcon}
+                />
+                <Text style={styles.redText}>Sociedad Valiente</Text>
+              </TouchableOpacity>
+            )}
+
+            {item.facebookNegocio && (
+              <TouchableOpacity
+                style={styles.redItem}
+                onPress={() => abrirLink(item.facebookNegocio)}
+              >
+                <Image
+                  source={require('../assets/facebook.png')}
+                  style={styles.redIcon}
+                />
+                <Text style={styles.redText}>Facebook del Negocio</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
+
       </View>
     );
   };
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
       <View style={styles.headerContainer}>
         <Text style={styles.header}>{negocio.nombre}</Text>
 
@@ -141,16 +184,14 @@ export default function CuponesPorNegocio({ route }) {
         data={cupones}
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 60 }}
       />
     </View>
   );
 }
 
-/* =======================
-   ESTILOS
-======================= */
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: '#000',
@@ -166,13 +207,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#ccff34',
-    marginBottom: 30,
+    marginBottom: 20,
   },
 
   logo: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
     borderWidth: 4,
     borderColor: '#ccff34',
   },
@@ -195,19 +236,35 @@ const styles = StyleSheet.create({
 
   card: {
     backgroundColor: '#ccff34',
-    borderRadius: 18,
+    borderRadius: 25,
     padding: 25,
-    marginBottom: 15,
-    alignItems: 'center',
+    marginBottom: 25,
+    elevation: 10,
   },
 
-  canjeado: { opacity: 0.85 },
+  canjeado: {
+    opacity: 0.9,
+  },
 
-  descripcion: {
+  tituloDescuento: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#000',
+  },
+
+  subtitulo: {
+    textAlign: 'center',
     fontSize: 13,
-    color: '#333',
-    marginBottom: 15,
-    lineHeight: 22,
+    color: '#000',
+    marginBottom: 10,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: '#000',
+    opacity: 0.2,
+    marginVertical: 15,
   },
 
   descripcionTitulo: {
@@ -215,42 +272,57 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
     textAlign: 'center',
+    marginBottom: 10,
+  },
+
+  descripcion: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 22,
+    marginBottom: 15,
   },
 
   codigoBox: {
     backgroundColor: '#fff',
     padding: 15,
-    borderRadius: 12,
-    marginBottom: 15,
-    width: '100%',
+    borderRadius: 15,
     alignItems: 'center',
+    marginBottom: 15,
   },
 
-  codigoLabel: { color: '#666' },
+  codigoLabel: {
+    color: '#666',
+  },
 
   codigo: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: 'bold',
   },
 
-/*   boton: {
-    backgroundColor: '#000',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 12,
+  seccionTitulo: {
+    fontSize: 14,
+    fontWeight: 'bold',
     marginBottom: 10,
+    color: '#000',
   },
 
-  botonTexto: {
-    color: '#ccff34',
-    fontWeight: 'bold',
-  }, */
+  contactoContainer: {
+    marginTop: 15,
+  },
+
+  botonesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
+  },
 
   botonWhats: {
-    backgroundColor: '#000000',
-    paddingVertical: 14,
-    paddingHorizontal: 30,
-    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#000',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 15,
   },
 
   botonWhatsTexto: {
@@ -258,9 +330,47 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  usadoTexto: {
-    marginTop: 10,
-    fontWeight: 'bold',
-    color: '#ff0000',
+  botonLlamar: {
+    backgroundColor: '#111',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 15,
   },
+
+  botonLlamarTexto: {
+    color: '#ccff34',
+    fontWeight: 'bold',
+  },
+
+  icono: {
+    width: 20,
+    height: 20,
+    marginRight: 8,
+  },
+
+  redesContainer: {
+    marginTop: 20,
+  },
+
+  redItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#000',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 15,
+    marginBottom: 10,
+  },
+
+  redIcon: {
+    width: 20,
+    height: 20,
+  },
+
+  redText: {
+    color: '#ccff34',
+    marginLeft: 10,
+    fontWeight: 'bold',
+  },
+
 });
