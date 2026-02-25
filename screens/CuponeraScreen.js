@@ -234,6 +234,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ccff34',
+    borderBottomColor: '#ffffff',
+    borderBottomWidth: 3,
     padding: 15,
     borderRadius: 14,
     marginBottom: 15,

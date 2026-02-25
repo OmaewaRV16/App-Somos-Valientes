@@ -1,11 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const Accion = require("../models/Accion"); // crea un modelo Accion similar a Cupon
+const Accion = require("../models/Accion");
 
-// Obtener todas las acciones
+// ==========================
+// OBTENER TODAS
+// ==========================
 router.get("/", async (req, res) => {
   try {
-    const acciones = await Accion.find();
+    const acciones = await Accion.find().sort({ createdAt: -1 });
     res.json(acciones);
   } catch (error) {
     console.error(error);
@@ -13,15 +15,25 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Crear acción
+// ==========================
+// CREAR ACCIÓN
+// ==========================
 router.post("/", async (req, res) => {
   const { titulo, descripcion } = req.body;
+
   if (!titulo || !descripcion) {
-    return res.status(400).json({ message: "Faltan datos para crear la acción" });
+    return res
+      .status(400)
+      .json({ message: "Faltan datos para crear la acción" });
   }
 
   try {
-    const nuevaAccion = new Accion({ titulo, descripcion });
+    const nuevaAccion = new Accion({
+      titulo,
+      descripcion,
+      estado: "en_curso", // 🔥 siempre inicia en curso
+    });
+
     await nuevaAccion.save();
     res.status(201).json(nuevaAccion);
   } catch (error) {
@@ -30,16 +42,20 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Editar acción
+// ==========================
+// EDITAR (incluye estado)
+// ==========================
 router.put("/:id", async (req, res) => {
-  const { titulo, descripcion } = req.body;
   try {
     const accion = await Accion.findByIdAndUpdate(
       req.params.id,
-      { titulo, descripcion },
+      req.body, // 🔥 ahora acepta estado
       { new: true }
     );
-    if (!accion) return res.status(404).json({ message: "Acción no encontrada" });
+
+    if (!accion)
+      return res.status(404).json({ message: "Acción no encontrada" });
+
     res.json(accion);
   } catch (error) {
     console.error(error);
@@ -47,11 +63,16 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Eliminar acción
+// ==========================
+// ELIMINAR
+// ==========================
 router.delete("/:id", async (req, res) => {
   try {
     const accion = await Accion.findByIdAndDelete(req.params.id);
-    if (!accion) return res.status(404).json({ message: "Acción no encontrada" });
+
+    if (!accion)
+      return res.status(404).json({ message: "Acción no encontrada" });
+
     res.json({ message: "Acción eliminada correctamente" });
   } catch (error) {
     console.error(error);
@@ -59,28 +80,30 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// Marcar acción como realizada
+// ==========================
+// MARCAR COMO REALIZADA
+// ==========================
 router.patch("/:id/realizar", async (req, res) => {
-  const { usuario } = req.body; // celular del usuario
+  const { usuario } = req.body;
+
   try {
     const accion = await Accion.findById(req.params.id);
-    if (!accion) return res.status(404).json({ message: "Acción no encontrada" });
+    if (!accion)
+      return res.status(404).json({ message: "Acción no encontrada" });
 
-    // Inicializa el array si no existe
-    if (!accion.realizados) accion.realizados = [];
-
-    // Evita duplicados
     if (!accion.realizados.includes(usuario)) {
       accion.realizados.push(usuario);
       await accion.save();
     }
 
-    res.json({ message: "Acción marcada como realizada", accion });
+    res.json({
+      message: "Acción marcada como realizada",
+      accion,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error al actualizar acción" });
   }
 });
-
 
 module.exports = router;

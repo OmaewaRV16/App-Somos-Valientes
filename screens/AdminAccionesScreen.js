@@ -25,12 +25,10 @@ export default function AdminAccionesScreen({ navigation }) {
   const loadAcciones = async () => {
     try {
       const response = await fetch(`${API_URL}/api/acciones`);
-      if (!response.ok) throw new Error();
       const data = await response.json();
       setAcciones(data);
       setFilteredAcciones(data);
-    } catch (error) {
-      console.log(error);
+    } catch {
       Alert.alert('Error', 'No se pudieron cargar las acciones');
     }
   };
@@ -49,6 +47,7 @@ export default function AdminAccionesScreen({ navigation }) {
 
   const buscarAcciones = (text) => {
     setSearch(text);
+
     if (text.trim() === '') {
       setFilteredAcciones(acciones);
     } else {
@@ -57,6 +56,25 @@ export default function AdminAccionesScreen({ navigation }) {
         item.descripcion.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredAcciones(resultado);
+    }
+  };
+
+  const cambiarEstado = async (accion) => {
+    const nuevoEstado =
+      accion.estado === 'finalizada'
+        ? 'en_curso'
+        : 'finalizada';
+
+    try {
+      await fetch(`${API_URL}/api/acciones/${accion._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: nuevoEstado }),
+      });
+
+      loadAcciones();
+    } catch {
+      Alert.alert('Error', 'No se pudo actualizar el estado');
     }
   };
 
@@ -71,17 +89,15 @@ export default function AdminAccionesScreen({ navigation }) {
           style: 'destructive',
           onPress: async () => {
             try {
-              const res = await fetch(`${API_URL}/api/acciones/${id}`, {
-                method: 'DELETE'
+              await fetch(`${API_URL}/api/acciones/${id}`, {
+                method: 'DELETE',
               });
-              if (!res.ok) throw new Error();
               loadAcciones();
-            } catch (error) {
-              console.log(error);
+            } catch {
               Alert.alert('Error', 'No se pudo eliminar la acción');
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
@@ -89,12 +105,13 @@ export default function AdminAccionesScreen({ navigation }) {
   const editarAccion = (accion) =>
     navigation.navigate('EditarAccion', { accion });
 
-  const crearAccion = () => navigation.navigate('CrearAccion');
+  const crearAccion = () =>
+    navigation.navigate('CrearAccion');
 
   return (
     <SafeAreaView style={styles.safeArea}>
 
-      {/* Barra de búsqueda */}
+      {/* 🔍 BUSCADOR */}
       <View style={styles.searchBox}>
         <TextInput
           style={styles.searchInput}
@@ -105,7 +122,7 @@ export default function AdminAccionesScreen({ navigation }) {
         />
       </View>
 
-      {/* Botón Crear */}
+      {/* ➕ BOTÓN CREAR */}
       <View style={styles.botonContainer}>
         <TouchableOpacity style={styles.boton} onPress={crearAccion}>
           <Text style={styles.botonTexto}>Crear Nueva Acción</Text>
@@ -121,29 +138,63 @@ export default function AdminAccionesScreen({ navigation }) {
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor="#ccff34"
-            colors={['#ccff34']}
           />
         }
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No hay acciones coincidentes</Text>
+          <Text style={styles.emptyText}>
+            No hay acciones coincidentes
+          </Text>
         }
         renderItem={({ item }) => (
-          <View style={styles.accion}>
+          <View style={styles.card}>
+
+            {/* 🔥 BADGE ESTADO */}
+            <View style={[
+              styles.badge,
+              item.estado === 'finalizada'
+                ? styles.finalizada
+                : styles.enCurso
+            ]}>
+              <Text style={styles.badgeText}>
+                {item.estado === 'finalizada'
+                  ? 'FINALIZADA'
+                  : 'EN CURSO'}
+              </Text>
+            </View>
+
             <Text style={styles.titulo}>{item.titulo}</Text>
-            <Text>{item.descripcion}</Text>
+            <Text style={styles.descripcion}>{item.descripcion}</Text>
+
+            {/* BOTONES */}
             <View style={styles.botones}>
+
               <TouchableOpacity
-                style={styles.editarBoton}
+                style={styles.estadoBtn}
+                onPress={() => cambiarEstado(item)}
+              >
+                <Text style={styles.estadoTexto}>
+                  Cambiar Estado
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.editarBtn}
                 onPress={() => editarAccion(item)}
               >
-                <Text style={styles.botonTextoEditar}>Editar</Text>
+                <Text style={styles.editarTexto}>
+                  Editar
+                </Text>
               </TouchableOpacity>
+
               <TouchableOpacity
-                style={styles.eliminarBoton}
+                style={styles.eliminarBtn}
                 onPress={() => eliminarAccion(item._id)}
               >
-                <Text style={styles.botonTextoEliminar}>Eliminar</Text>
+                <Text style={styles.eliminarTexto}>
+                  Eliminar
+                </Text>
               </TouchableOpacity>
+
             </View>
           </View>
         )}
@@ -155,28 +206,25 @@ export default function AdminAccionesScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000000ff',
-    paddingTop: Platform.OS === 'android'
-      ? StatusBar.currentHeight + 10
-      : 0,
+    backgroundColor: '#000',
+    paddingTop:
+      Platform.OS === 'android'
+        ? StatusBar.currentHeight + 10
+        : 0,
   },
-  container: { padding: 30, paddingBottom: 100 },
 
-  botonContainer: { paddingHorizontal: 30, marginBottom: 10, marginTop: 10 },
-  boton: {
-    backgroundColor: '#ccff34',
-    paddingVertical: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    elevation: 4,
+  container: {
+    padding: 20,
+    paddingBottom: 100,
   },
-  botonTexto: { color: '#000000ff', fontSize: 18, fontWeight: 'bold' },
 
+  /* BUSCADOR */
   searchBox: {
     paddingHorizontal: 20,
-    paddingBottom: 15,
+    paddingTop: 10,
     backgroundColor: '#000',
   },
+
   searchInput: {
     backgroundColor: '#1a1a1a',
     borderColor: '#ccff34',
@@ -188,46 +236,98 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  accion: {
+  /* BOTÓN CREAR */
+  botonContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+
+  boton: {
     backgroundColor: '#ccff34',
-    padding: 25,
-    borderRadius: 8,
-    marginBottom: 15,
-    elevation: 3,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
   },
-  titulo: {
-    fontSize: 25,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#000'
-  },
-  botones: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10
-  },
-  editarBoton: {
-    backgroundColor: '#fff',
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 8
-  },
-  eliminarBoton: {
-    backgroundColor: '#000',
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 8
-  },
-  botonTextoEditar: {
+
+  botonTexto: {
     color: '#000',
+    fontSize: 18,
     fontWeight: 'bold',
-    fontSize: 14
   },
-  botonTextoEliminar: {
+
+  /* CARD */
+  card: {
+    backgroundColor: '#ccff34',
+    padding: 20,
+    borderRadius: 14,
+    marginBottom: 15,
+  },
+
+  titulo: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 8,
+  },
+
+  descripcion: {
+    fontSize: 15,
+    color: '#000',
+    lineHeight: 22,
+  },
+
+  badge: {
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    marginBottom: 8,
+  },
+
+  enCurso: {
+    backgroundColor: '#000',
+  },
+
+  finalizada: {
+    backgroundColor: '#ff4d4d',
+  },
+
+  badgeText: {
     color: '#ccff34',
+    fontSize: 11,
     fontWeight: 'bold',
-    fontSize: 14
   },
+
+  botones: {
+    marginTop: 15,
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'center',
+  },
+
+  estadoBtn: {
+    marginBottom: 8,
+  },
+
+  estadoTexto: {
+    fontWeight: 'bold',
+    color: '#000',
+  },
+
+  editarBtn: {
+    marginBottom: 8,
+  },
+
+  editarTexto: {
+    fontWeight: 'bold',
+    color: '#000',
+  },
+
+  eliminarTexto: {
+    fontWeight: 'bold',
+    color: '#ff0000',
+  },
+
   emptyText: {
     color: '#fff',
     textAlign: 'center',
