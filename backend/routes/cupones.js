@@ -22,12 +22,14 @@ router.post("/", async (req, res) => {
   const {
     nombre,
     descripcion,
+    descripcionNegocio,
     codigo,
     logo,
     categoria,
     whatsapp,
     facebookSergio,
     instagramSergio,
+    tiktokSergio,
     facebookNegocio,
   } = req.body;
 
@@ -41,12 +43,14 @@ router.post("/", async (req, res) => {
     const nuevoCupon = new Cupon({
       nombre: nombre.trim(),
       descripcion: descripcion.trim(),
+      descripcionNegocio: descripcionNegocio?.trim() || "",
       codigo: codigo.trim(),
       logo: logo?.trim() || "",
       categoria: categoria.trim(),
       whatsapp: whatsapp?.trim() || "",
       facebookSergio: facebookSergio?.trim() || "",
       instagramSergio: instagramSergio?.trim() || "",
+      tiktokSergio: tiktokSergio?.trim() || "",
       facebookNegocio: facebookNegocio?.trim() || "",
       usados: [],
     });
@@ -66,12 +70,14 @@ router.put("/:id", async (req, res) => {
   const {
     nombre,
     descripcion,
+    descripcionNegocio,
     codigo,
     logo,
     categoria,
     whatsapp,
     facebookSergio,
     instagramSergio,
+    tiktokSergio,
     facebookNegocio,
   } = req.body;
 
@@ -81,12 +87,14 @@ router.put("/:id", async (req, res) => {
       {
         nombre: nombre?.trim(),
         descripcion: descripcion?.trim(),
+        descripcionNegocio: descripcionNegocio?.trim() || "",
         codigo: codigo?.trim(),
         logo: logo?.trim() || "",
         categoria: categoria?.trim(),
         whatsapp: whatsapp?.trim() || "",
         facebookSergio: facebookSergio?.trim() || "",
         instagramSergio: instagramSergio?.trim() || "",
+        tiktokSergio: tiktokSergio?.trim() || "",
         facebookNegocio: facebookNegocio?.trim() || "",
       },
       { new: true }
@@ -116,7 +124,6 @@ router.delete("/:id", async (req, res) => {
 
     res.json({ message: "Cupón eliminado correctamente" });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Error al eliminar cupón" });
   }
 });
@@ -151,7 +158,6 @@ router.patch("/:id/canjear", async (req, res) => {
 
     res.json(cupon);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Error al canjear cupón" });
   }
 });
