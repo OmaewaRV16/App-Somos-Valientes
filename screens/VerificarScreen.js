@@ -14,11 +14,10 @@ import { TextInput, Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// ✅ BACKEND EN RAILWAY
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function VerificarScreen({ route, navigation }) {
-  const { celular, codigoBackend } = route.params; // 👈 recibimos código aquí
+  const { celular, codigoBackend } = route.params;
   const [codigo, setCodigo] = useState('');
 
   const handleVerificar = async () => {
@@ -28,7 +27,7 @@ export default function VerificarScreen({ route, navigation }) {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/verificar`, {
+      const response = await fetch(`${API_URL}/api/users/verificar`, { // ✅ CORREGIDO
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ celular, codigo }),
@@ -44,6 +43,7 @@ export default function VerificarScreen({ route, navigation }) {
       Alert.alert('Éxito', 'Cuenta verificada correctamente', [
         { text: 'OK', onPress: () => navigation.replace('Login') },
       ]);
+
     } catch (error) {
       console.log(error);
       Alert.alert('Error', 'No se pudo conectar con el servidor');
@@ -61,7 +61,8 @@ export default function VerificarScreen({ route, navigation }) {
           enableOnAndroid
           keyboardShouldPersistTaps="handled"
         >
-          {/* Logo y título */}
+
+          {/* Header */}
           <View style={styles.headerContainer}>
             <Image
               source={require('../assets/logo.png')}
@@ -72,7 +73,7 @@ export default function VerificarScreen({ route, navigation }) {
             <Text style={styles.subtitle}>Ingresa el código recibido</Text>
           </View>
 
-          {/* Tarjeta */}
+          {/* Card */}
           <View style={styles.cardContainer}>
             <TextInput
               label="Código"
@@ -85,7 +86,7 @@ export default function VerificarScreen({ route, navigation }) {
               placeholder="Ingresa tu código"
             />
 
-            {/* 🔥 CÓDIGO TEMPORAL EN PANTALLA */}
+            {/* Mostrar código temporal solo para pruebas */}
             {codigoBackend && (
               <Text style={styles.simulatedCode}>
                 Código temporal: {codigoBackend}
@@ -102,9 +103,12 @@ export default function VerificarScreen({ route, navigation }) {
             </Button>
 
             <TouchableOpacity onPress={() => navigation.replace('Login')}>
-              <Text style={styles.backText}>Volver a iniciar sesión</Text>
+              <Text style={styles.backText}>
+                Volver a iniciar sesión
+              </Text>
             </TouchableOpacity>
           </View>
+
         </KeyboardAwareScrollView>
       </TouchableWithoutFeedback>
     </SafeAreaView>

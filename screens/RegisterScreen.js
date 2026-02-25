@@ -12,7 +12,6 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// ✅ BACKEND EN RAILWAY
 const API_URL = "https://app-somos-valientes-production.up.railway.app";
 
 export default function RegisterScreen({ navigation }) {
@@ -77,7 +76,7 @@ export default function RegisterScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/register`, {
+      const response = await fetch(`${API_URL}/api/users/register`, { // ✅ CORREGIDO
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -99,7 +98,6 @@ export default function RegisterScreen({ navigation }) {
         return;
       }
 
-      // 🔥 Recibimos el código desde backend
       const codigoBackend = data.codigo || null;
 
       navigation.navigate("VerificarScreen", {
@@ -208,11 +206,7 @@ export default function RegisterScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  container: {
-    padding: 30,
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
+  container: { padding: 30, flexGrow: 1, justifyContent: 'center' },
   formCard: {
     backgroundColor: '#ccff34',
     padding: 30,
@@ -227,10 +221,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 25,
   },
-  input: {
-    marginBottom: 12,
-    backgroundColor: '#ffffff',
-  },
+  input: { marginBottom: 12, backgroundColor: '#ffffff' },
   label: { fontSize: 16, marginVertical: 12, fontWeight: 'bold' },
   radioRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
   button: {

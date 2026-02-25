@@ -165,4 +165,37 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// ============================
+// VERIFICAR CUENTA
+// ============================
+router.post('/verificar', async (req, res) => {
+  try {
+    const { celular, codigo } = req.body;
+
+    if (!celular || !codigo) {
+      return res.status(400).json({ message: 'Datos incompletos' });
+    }
+
+    const user = await User.findOne({ celular });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    if (user.codigo !== codigo) {
+      return res.status(400).json({ message: 'Código incorrecto' });
+    }
+
+    user.verificado = true;
+    user.codigo = null;
+    await user.save();
+
+    res.json({ message: 'Cuenta verificada correctamente' });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error verificando cuenta' });
+  }
+});
+
 module.exports = router;
