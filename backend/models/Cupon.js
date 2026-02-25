@@ -38,7 +38,6 @@ const CuponSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 🔵 REDES DEFINITIVAS
     facebookSergio: {
       type: String,
       trim: true,
@@ -51,7 +50,6 @@ const CuponSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 🆕 NUEVA RED
     tiktokSergio: {
       type: String,
       trim: true,
@@ -59,6 +57,13 @@ const CuponSchema = new mongoose.Schema(
     },
 
     facebookNegocio: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    // 🔥 NUEVA DESCRIPCIÓN DEL NEGOCIO
+    descripcionNegocio: {
       type: String,
       trim: true,
       default: "",

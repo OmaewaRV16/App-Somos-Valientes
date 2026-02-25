@@ -29,14 +29,15 @@ const CATEGORIAS = [
 export default function CrearCupon({ navigation }) {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [descripcionNegocio, setDescripcionNegocio] = useState('');
   const [codigo, setCodigo] = useState('');
   const [logo, setLogo] = useState('');
   const [categoria, setCategoria] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
 
-  // 🔥 REDES DEFINITIVAS
   const [facebookSergio, setFacebookSergio] = useState('');
   const [instagramSergio, setInstagramSergio] = useState('');
+  const [tiktokSergio, setTiktokSergio] = useState('');
   const [facebookNegocio, setFacebookNegocio] = useState('');
 
   const guardar = async () => {
@@ -54,14 +55,15 @@ export default function CrearCupon({ navigation }) {
       const payload = {
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
+        descripcionNegocio: descripcionNegocio.trim() || "",
         codigo: codigo.trim(),
         categoria,
         logo: logo.trim() || "",
         whatsapp: whatsapp.trim() || "",
 
-        // 🔥 REDES
         facebookSergio: facebookSergio.trim() || "",
         instagramSergio: instagramSergio.trim() || "",
+        tiktokSergio: tiktokSergio.trim() || "",
         facebookNegocio: facebookNegocio.trim() || "",
       };
 
@@ -114,7 +116,17 @@ export default function CrearCupon({ navigation }) {
           placeholderTextColor="#999"
         />
 
-        <Text style={styles.label}>Descripción *</Text>
+        <Text style={styles.label}>Descripción del negocio (opcional)</Text>
+        <TextInput
+          value={descripcionNegocio}
+          onChangeText={setDescripcionNegocio}
+          style={[styles.input, { height: 80 }]}
+          placeholder="Breve descripción del negocio..."
+          placeholderTextColor="#999"
+          multiline
+        />
+
+        <Text style={styles.label}>Descripción del cupón *</Text>
         <TextInput
           value={descripcion}
           onChangeText={setDescripcion}
@@ -155,7 +167,6 @@ export default function CrearCupon({ navigation }) {
           keyboardType="phone-pad"
         />
 
-        {/* 🔵 REDES */}
         <Text style={styles.label}>Facebook de Sergio (opcional)</Text>
         <TextInput
           value={facebookSergio}
@@ -172,6 +183,16 @@ export default function CrearCupon({ navigation }) {
           onChangeText={setInstagramSergio}
           style={styles.input}
           placeholder="https://instagram.com/..."
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+        />
+
+        <Text style={styles.label}>TikTok de Sergio (opcional)</Text>
+        <TextInput
+          value={tiktokSergio}
+          onChangeText={setTiktokSergio}
+          style={styles.input}
+          placeholder="https://tiktok.com/@..."
           placeholderTextColor="#999"
           autoCapitalize="none"
         />

@@ -53,6 +53,7 @@ export default function CuponesPorNegocio({ route }) {
 
     return (
       <View style={{ marginBottom: 30 }}>
+
         <View style={styles.card}>
 
           <Image
@@ -82,29 +83,34 @@ export default function CuponesPorNegocio({ route }) {
           ))}
 
           {item.whatsapp && (
-            <View style={styles.contactoContainer}>
-              <Text style={styles.contactoTitulo}>
-                Canjea tu cupón al:
+            <View style={styles.botonesContainer}>
+
+              <Text style={styles.textoBotonContainer}>
+                Canjea tu cupón por WhatsApp o Llamada:
               </Text>
 
-              <View style={styles.iconosContactoRow}>
+              <View style={styles.filaBotones}>
 
                 <TouchableOpacity
-                  style={styles.contactoSimple}
+                  style={styles.botonWhatsapp}
                   onPress={() => abrirWhatsApp(item.whatsapp)}
                 >
                   <Image
                     source={require('../assets/whatsapp.png')}
-                    style={styles.iconoContactoImg}
+                    style={styles.iconoBoton}
                   />
-                  <Text style={styles.textoContacto}>WhatsApp</Text>
+                  <Text style={styles.textoBoton}>WhatsApp</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={styles.contactoSimple}
+                  style={styles.botonLlamar}
                   onPress={() => llamarTelefono(item.whatsapp)}
                 >
-                  <Text style={styles.textoContacto}>Llamar</Text>
+                  <Image
+                    source={require('../assets/telefono.png')}
+                    style={styles.iconoBotonTelefono}
+                  />
+                  <Text style={styles.textoBoton}>Llamar</Text>
                 </TouchableOpacity>
 
               </View>
@@ -112,6 +118,33 @@ export default function CuponesPorNegocio({ route }) {
           )}
 
         </View>
+
+        <View style={styles.redesSergioBox}>
+          <Text style={styles.redesTituloBox}>
+            Sigue a Sergio Vadillo:
+          </Text>
+
+          <View style={styles.redesRow}>
+            {item.facebookSergio && (
+              <TouchableOpacity onPress={() => abrirLink(item.facebookSergio)}>
+                <Image source={require('../assets/facebook.png')} style={styles.iconoRed}/>
+              </TouchableOpacity>
+            )}
+
+            {item.instagramSergio && (
+              <TouchableOpacity onPress={() => abrirLink(item.instagramSergio)}>
+                <Image source={require('../assets/instagram.png')} style={styles.iconoRed}/>
+              </TouchableOpacity>
+            )}
+
+            {item.tiktokSergio && (
+              <TouchableOpacity onPress={() => abrirLink(item.tiktokSergio)}>
+                <Image source={require('../assets/tiktok.png')} style={styles.iconoRed}/>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
       </View>
     );
   };
@@ -119,78 +152,20 @@ export default function CuponesPorNegocio({ route }) {
   return (
     <View style={styles.container}>
 
-      <View style={styles.headerContainer}>
-        <Text style={styles.header}>{negocio.nombre}</Text>
+      <Text style={styles.header}>{negocio.nombre}</Text>
 
-        <View style={styles.requisitoCard}>
+      <View style={styles.negocioCard}>
+        <View style={styles.logoSection}>
+          <Image
+            source={{ uri: negocio.logo }}
+            style={styles.logo}
+          />
+        </View>
 
-          {negocio.logo && (
-            <Image
-              source={{ uri: negocio.logo }}
-              style={styles.logoValidacion}
-            />
-          )}
-
-          <View style={styles.redesContainer}>
-
-            {/* REDES SERGIO */}
-            <Text style={styles.requisitoTitulo}>
-              Sigue las redes de Sergio para validar tu cupón:
-            </Text>
-
-            <View style={styles.redesRow}>
-
-              {cupones[0]?.facebookSergio && (
-                <TouchableOpacity onPress={() => abrirLink(cupones[0].facebookSergio)}>
-                  <Image
-                    source={require('../assets/facebook.png')}
-                    style={styles.iconoRed}
-                  />
-                </TouchableOpacity>
-              )}
-
-              {cupones[0]?.instagramSergio && (
-                <TouchableOpacity onPress={() => abrirLink(cupones[0].instagramSergio)}>
-                  <Image
-                    source={require('../assets/instagram.png')}
-                    style={styles.iconoRed}
-                  />
-                </TouchableOpacity>
-              )}
-
-              {cupones[0]?.tiktokSergio && (
-                <TouchableOpacity onPress={() => abrirLink(cupones[0].tiktokSergio)}>
-                  <Image
-                    source={require('../assets/tiktok.png')}
-                    style={styles.iconoRed}
-                  />
-                </TouchableOpacity>
-              )}
-
-            </View>
-
-            {/* REDES NEGOCIO */}
-            {cupones[0]?.facebookNegocio && (
-              <>
-                <Text style={[styles.requisitoTitulo, { marginTop: 12 }]}>
-                  También sigue a {negocio.nombre}:
-                </Text>
-
-                <View style={styles.redesRow}>
-                  <TouchableOpacity
-                    onPress={() => abrirLink(cupones[0].facebookNegocio)}
-                  >
-                    <Image
-                      source={require('../assets/facebook.png')}
-                      style={styles.iconoRed}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
-
-          </View>
-
+        <View style={styles.descripcionSection}>
+          <Text style={styles.descripcionNegocio}>
+            {cupones[0]?.descripcionNegocio}
+          </Text>
         </View>
       </View>
 
@@ -214,62 +189,149 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
-  headerContainer: {
-    marginBottom: 25,
-    marginTop: 10,
-  },
-
   header: {
     fontSize: 26,
     fontWeight: 'bold',
     color: '#ccff34',
-    marginBottom: 20,
     textAlign: 'center',
+    marginVertical: 20,
   },
 
-  requisitoCard: {
+  negocioCard: {
     backgroundColor: '#ccff34',
-    padding: 20,
     flexDirection: 'row',
+    padding: 20,
+    marginBottom: 25,
     alignItems: 'center',
   },
 
-  logoValidacion: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
+  logoSection: {
     marginRight: 15,
   },
 
-  redesContainer: {
+  logo: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+
+  descripcionSection: {
     flex: 1,
-    flexShrink: 1,
   },
 
-  requisitoTitulo: {
+  descripcionNegocio: {
+    fontSize: 14,
     color: '#000',
-    fontWeight: 'bold',
-    fontSize: 13,
-    marginBottom: 8,
-    flexWrap: 'wrap',
-    flexShrink: 1,
-  },
-
-  redesRow: {
-    flexDirection: 'row',
-    gap: 20,
-  },
-
-  iconoRed: {
-    width: 28,
-    height: 28,
+    lineHeight: 20,
   },
 
   card: {
     backgroundColor: '#ccff34',
-    paddingVertical: 18,
-    paddingHorizontal: 15,
+    padding: 20,
     position: 'relative',
+  },
+
+  tituloDescuento: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    paddingVertical: 10,
+  },
+
+  descripcion: {
+    fontSize: 13,
+    lineHeight: 20,
+  },
+
+  descripcionBold: {
+    fontWeight: 'bold',
+  },
+
+  descripcionItalic: {
+    fontStyle: 'italic',
+    fontSize: 12,
+  },
+
+  botonesContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+
+  textoBotonContainer: {
+    fontWeight: '600',
+    marginBottom: 15,
+    textAlign: 'center',
+    color: '#000',
+    fontSize: 14,
+  },
+
+  filaBotones: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20,
+  },
+
+  botonWhatsapp: {
+    backgroundColor: '#000',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 12,
+  },
+
+  botonLlamar: {
+    backgroundColor: '#000',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 12,
+  },
+
+  iconoBoton: {
+    width: 22,
+    height: 22,
+    marginRight: 8,
+    resizeMode: 'contain',
+  },
+
+  iconoBotonTelefono: {
+    width: 22,
+    height: 22,
+    marginRight: 8,
+    resizeMode: 'contain',
+    backgroundColor: '#00ccff',
+    borderRadius: 12,
+    padding: 4,
+  },
+
+  textoBoton: {
+    color: '#ccff34',
+    fontWeight: 'bold',
+  },
+
+  redesSergioBox: {
+    backgroundColor: '#ccff34',
+    padding: 18,
+    borderRadius: 15,
+    alignItems: 'center',
+    marginTop: 25,
+  },
+
+  redesTituloBox: {
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+
+  redesRow: {
+    flexDirection: 'row',
+    gap: 25,
+  },
+
+  iconoRed: {
+    width: 36,
+    height: 36,
   },
 
   iconoSuperiorImg: {
@@ -288,63 +350,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     resizeMode: 'contain',
-  },
-
-  tituloDescuento: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#000',
-    paddingVertical: 10,
-  },
-
-  descripcion: {
-    fontSize: 13,
-    color: '#111',
-    lineHeight: 20,
-    textAlign: 'left',
-  },
-
-  descripcionBold: {
-    fontWeight: 'bold',
-  },
-
-  descripcionItalic: {
-    fontStyle: 'italic',
-    fontSize: 12,
-  },
-
-  contactoContainer: {
-    marginTop: 15,
-    alignItems: 'center',
-  },
-
-  contactoTitulo: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-
-  iconosContactoRow: {
-    flexDirection: 'row',
-    gap: 25,
-  },
-
-  contactoSimple: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  iconoContactoImg: {
-    width: 20,
-    height: 20,
-    marginRight: 6,
-  },
-
-  textoContacto: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#000',
   },
 
 });

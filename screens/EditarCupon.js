@@ -31,14 +31,15 @@ export default function EditarCupon({ route, navigation }) {
 
   const [nombre, setNombre] = useState(cupon?.nombre || '');
   const [descripcion, setDescripcion] = useState(cupon?.descripcion || '');
+  const [descripcionNegocio, setDescripcionNegocio] = useState(cupon?.descripcionNegocio || '');
   const [codigo, setCodigo] = useState(cupon?.codigo || '');
   const [logo, setLogo] = useState(cupon?.logo || '');
   const [categoria, setCategoria] = useState(cupon?.categoria || '');
   const [whatsapp, setWhatsapp] = useState(cupon?.whatsapp || '');
 
-  // 🔥 REDES DEFINITIVAS
   const [facebookSergio, setFacebookSergio] = useState(cupon?.facebookSergio || '');
   const [instagramSergio, setInstagramSergio] = useState(cupon?.instagramSergio || '');
+  const [tiktokSergio, setTiktokSergio] = useState(cupon?.tiktokSergio || '');
   const [facebookNegocio, setFacebookNegocio] = useState(cupon?.facebookNegocio || '');
 
   const guardarCambios = async () => {
@@ -56,6 +57,7 @@ export default function EditarCupon({ route, navigation }) {
       const payload = {
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
+        descripcionNegocio: descripcionNegocio.trim() || "",
         codigo: codigo.trim(),
         categoria,
         logo: logo.trim() || "",
@@ -63,6 +65,7 @@ export default function EditarCupon({ route, navigation }) {
 
         facebookSergio: facebookSergio.trim() || "",
         instagramSergio: instagramSergio.trim() || "",
+        tiktokSergio: tiktokSergio.trim() || "",
         facebookNegocio: facebookNegocio.trim() || "",
       };
 
@@ -114,11 +117,20 @@ export default function EditarCupon({ route, navigation }) {
           value={nombre}
           onChangeText={setNombre}
           style={styles.input}
-          placeholder="Ej. Pizza Valiente"
           placeholderTextColor="#999"
         />
 
-        <Text style={styles.label}>Descripción *</Text>
+        <Text style={styles.label}>Descripción del negocio (opcional)</Text>
+        <TextInput
+          value={descripcionNegocio}
+          onChangeText={setDescripcionNegocio}
+          style={[styles.input, { height: 80 }]}
+          multiline
+          placeholder="Breve descripción del negocio..."
+          placeholderTextColor="#999"
+        />
+
+        <Text style={styles.label}>Descripción del cupón *</Text>
         <TextInput
           value={descripcion}
           onChangeText={setDescripcion}
@@ -155,14 +167,12 @@ export default function EditarCupon({ route, navigation }) {
           placeholderTextColor="#999"
         />
 
-        {/* 🔵 REDES */}
         <Text style={styles.label}>Facebook de Sergio (opcional)</Text>
         <TextInput
           value={facebookSergio}
           onChangeText={setFacebookSergio}
           style={styles.input}
           autoCapitalize="none"
-          placeholder="https://facebook.com/..."
           placeholderTextColor="#999"
         />
 
@@ -172,7 +182,15 @@ export default function EditarCupon({ route, navigation }) {
           onChangeText={setInstagramSergio}
           style={styles.input}
           autoCapitalize="none"
-          placeholder="https://instagram.com/..."
+          placeholderTextColor="#999"
+        />
+
+        <Text style={styles.label}>TikTok de Sergio (opcional)</Text>
+        <TextInput
+          value={tiktokSergio}
+          onChangeText={setTiktokSergio}
+          style={styles.input}
+          autoCapitalize="none"
           placeholderTextColor="#999"
         />
 
@@ -182,7 +200,6 @@ export default function EditarCupon({ route, navigation }) {
           onChangeText={setFacebookNegocio}
           style={styles.input}
           autoCapitalize="none"
-          placeholder="https://facebook.com/..."
           placeholderTextColor="#999"
         />
 
