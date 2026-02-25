@@ -106,7 +106,7 @@ export default function AccionesScreen({ route }) {
           </>
         )}
 
-        {/* 🔴 FINALIZADAS */}
+        {/* 🔴 FINALIZADAS1 */}
         {accionesFinalizadas.length > 0 && (
           <>
             <Text style={[styles.seccionTitulo, styles.finalizadasTitulo]}>
