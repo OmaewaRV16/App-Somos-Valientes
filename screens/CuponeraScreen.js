@@ -68,7 +68,6 @@ export default function CuponeraScreen({ route, navigation }) {
       setCategorias(agrupados);
       setFiltered(agrupados);
     } catch (error) {
-      console.log(error);
       Alert.alert('Error', 'No se pudieron cargar los cupones');
     } finally {
       setLoading(false);
@@ -86,9 +85,6 @@ export default function CuponeraScreen({ route, navigation }) {
     setRefreshing(false);
   };
 
-  /* =======================
-     BÚSQUEDA
-  ======================= */
   const buscar = (text) => {
     setSearch(text);
 
@@ -118,18 +114,16 @@ export default function CuponeraScreen({ route, navigation }) {
         </View>
       ) : (
         <>
-          {/* 🔍 BÚSQUEDA */}
           <View style={styles.searchBox}>
             <TextInput
               style={styles.searchInput}
               placeholder="Buscar negocio..."
-              placeholderTextColor="#9aa09f"
+              placeholderTextColor="#777"
               value={search}
               onChangeText={buscar}
             />
           </View>
 
-          {/* LISTA POR CATEGORÍAS */}
           <FlatList
             contentContainerStyle={styles.container}
             data={filtered}
@@ -138,14 +132,21 @@ export default function CuponeraScreen({ route, navigation }) {
             onRefresh={onRefresh}
             renderItem={({ item }) => (
               <View>
+
                 {/* CATEGORÍA */}
-                <Text style={styles.categoriaTitulo}>{item.categoria}</Text>
+                <View style={styles.categoriaRow}>
+                  <Text style={styles.categoriaTitulo}>
+                    {item.categoria}
+                  </Text>
+                  <View style={styles.linea} />
+                </View>
 
                 {/* NEGOCIOS */}
                 {item.negocios.map((negocio) => (
                   <TouchableOpacity
                     key={negocio.nombre}
                     style={styles.cupon}
+                    activeOpacity={0.85}
                     onPress={() =>
                       navigation.navigate('CuponesPorNegocio', {
                         negocio,
@@ -153,7 +154,6 @@ export default function CuponeraScreen({ route, navigation }) {
                       })
                     }
                   >
-                    {/* LOGO */}
                     <View style={styles.logoWrapper}>
                       {negocio.logo ? (
                         <Image
@@ -168,13 +168,17 @@ export default function CuponeraScreen({ route, navigation }) {
                       )}
                     </View>
 
-                    {/* INFO */}
                     <View style={styles.info}>
                       <Text style={styles.titulo}>{negocio.nombre}</Text>
-                      <Text style={styles.descripcion}>
-                        {negocio.cupones.length} cupón(es) disponibles
-                      </Text>
+
+                      <View style={styles.badge}>
+                        <Text style={styles.badgeText}>
+                          {negocio.cupones.length} cupón(es)
+                        </Text>
+                      </View>
                     </View>
+
+                    <Text style={styles.arrow}>›</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -186,9 +190,10 @@ export default function CuponeraScreen({ route, navigation }) {
   );
 }
 
-/* =======================
-   ESTILOS
-======================= */
+/* ======================= */
+/* NUEVOS ESTILOS PREMIUM */
+/* ======================= */
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -198,22 +203,22 @@ const styles = StyleSheet.create({
   searchBox: {
     paddingHorizontal: 20,
     paddingTop: 15,
-    backgroundColor: '#000',
   },
+
   searchInput: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#111',
     borderColor: '#ccff34',
-    borderWidth: 1.5,
-    borderRadius: 10,
-    padding: 12,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
     fontSize: 16,
     color: '#ccff34',
-    marginBottom: 10,
+    marginBottom: 15,
   },
 
   container: {
-    padding: 20,
-    paddingBottom: 80,
+    paddingHorizontal: 20,
+    paddingBottom: 100,
   },
 
   loader: {
@@ -222,45 +227,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
+  categoriaRow: {
+    marginTop: 20,
+    marginBottom: 10,
+  },
+
   categoriaTitulo: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#ccff34',
-    marginBottom: 10,
-    marginTop: 20,
+    marginBottom: 5,
+  },
+
+  linea: {
+    height: 2,
+    width: 40,
+    backgroundColor: '#ccff34',
   },
 
   cupon: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ccff34',
-    borderBottomColor: '#ffffff',
-    borderBottomWidth: 3,
-    padding: 15,
-    borderRadius: 14,
-    marginBottom: 15,
-    elevation: 3,
+    padding: 18,
+    borderRadius: 20,
+    marginBottom: 18,
+    shadowColor: '#ccff34',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
 
   logoWrapper: {
     marginRight: 15,
   },
+
   logo: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 75,
+    height: 75,
+    borderRadius: 40,
     backgroundColor: '#fff',
   },
+
   logoPlaceholder: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 75,
+    height: 75,
+    borderRadius: 20,
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#ccff34',
   },
+
   logoPlaceholderText: {
     color: '#ccff34',
     fontWeight: 'bold',
@@ -270,14 +288,31 @@ const styles = StyleSheet.create({
   info: {
     flex: 1,
   },
+
   titulo: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  descripcion: {
-    fontSize: 14,
-    color: '#0000008b',
+
+  badge: {
+    backgroundColor: '#000',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+
+  badgeText: {
+    color: '#ccff34',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+
+  arrow: {
+    fontSize: 26,
+    color: '#000',
+    marginLeft: 10,
   },
 });

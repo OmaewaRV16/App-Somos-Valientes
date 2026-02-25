@@ -1,12 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import {
   Text,
-  FlatList,
-  TouchableOpacity,
   StyleSheet,
   Alert,
   RefreshControl,
   View,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -15,7 +14,8 @@ const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function AccionesScreen({ route }) {
   const { user } = route.params || {};
-  const [acciones, setAcciones] = useState([]);
+  const [accionesEnCurso, setAccionesEnCurso] = useState([]);
+  const [accionesFinalizadas, setAccionesFinalizadas] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadAcciones = async () => {
@@ -23,9 +23,13 @@ export default function AccionesScreen({ route }) {
       const response = await fetch(`${API_URL}/api/acciones`);
       if (!response.ok) throw new Error();
       const data = await response.json();
-      setAcciones(Array.isArray(data) ? data : []);
+
+      const enCurso = data.filter(a => a.estado === 'en_curso');
+      const finalizadas = data.filter(a => a.estado === 'finalizada');
+
+      setAccionesEnCurso(enCurso);
+      setAccionesFinalizadas(finalizadas);
     } catch (error) {
-      console.log(error);
       Alert.alert('Error', 'No se pudieron cargar las acciones');
     }
   };
@@ -42,15 +46,29 @@ export default function AccionesScreen({ route }) {
     setRefreshing(false);
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.topRow}>
-        <View style={styles.indicator} />
-        <Text style={styles.titulo}>{item.titulo}</Text>
-      </View>
+  const renderCard = (item, esFinalizada = false) => (
+    <View
+      key={item._id}   // 🔥 FIX DEL ERROR
+      style={[
+        styles.card,
+        esFinalizada && styles.cardFinalizada
+      ]}
+    >
+      <Text
+        style={[
+          styles.titulo,
+          esFinalizada && styles.tituloFinalizado
+        ]}
+      >
+        {item.titulo}
+      </Text>
 
-      {/* 👇 Ahora muestra TODO el texto */}
-      <Text style={styles.descripcion}>
+      <Text
+        style={[
+          styles.descripcion,
+          esFinalizada && styles.descripcionFinalizada
+        ]}
+      >
         {item.descripcion}
       </Text>
     </View>
@@ -59,17 +77,8 @@ export default function AccionesScreen({ route }) {
   return (
     <SafeAreaView style={styles.safeArea}>
 
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>
-          Actividades para ayudar a nuestra comunidad.
-        </Text>
-      </View>
-
-      <FlatList
+      <ScrollView
         contentContainerStyle={styles.container}
-        data={acciones}
-        keyExtractor={(item) => item._id}
-        renderItem={renderItem}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -77,12 +86,39 @@ export default function AccionesScreen({ route }) {
             tintColor="#ccff34"
           />
         }
-        ListEmptyComponent={
-          <Text style={styles.empty}>
-            No hay acciones disponibles por ahora.
+      >
+
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerTitle}>
+            Actividades Sociedad Valiente
           </Text>
-        }
-      />
+        </View>
+
+        {/* 🟢 EN CURSO */}
+        {accionesEnCurso.length > 0 && (
+          <>
+            <Text style={styles.seccionTitulo}>
+              EN CURSO
+            </Text>
+            {accionesEnCurso.map(item =>
+              renderCard(item, false)
+            )}
+          </>
+        )}
+
+        {/* 🔴 FINALIZADAS */}
+        {accionesFinalizadas.length > 0 && (
+          <>
+            <Text style={[styles.seccionTitulo, styles.finalizadasTitulo]}>
+              FINALIZADOS
+            </Text>
+            {accionesFinalizadas.map(item =>
+              renderCard(item, true)
+            )}
+          </>
+        )}
+
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -100,67 +136,61 @@ const styles = StyleSheet.create({
   },
 
   headerContainer: {
-    paddingHorizontal: 20,
     paddingTop: 30,
     paddingBottom: 10,
   },
 
   headerTitle: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#ccff34',
     textAlign: 'center',
   },
 
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#ccff3490',
-    marginTop: 6,
+  seccionTitulo: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ccff34',
+    marginTop: 25,
+    marginBottom: 10,
+  },
+
+  finalizadasTitulo: {
+    color: '#ff4d4d',
   },
 
   card: {
     backgroundColor: '#111',
-    borderRadius: 20,
-    padding: 22,
-    marginBottom: 18,
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 15,
     borderWidth: 1,
     borderColor: '#1f1f1f',
-    borderBottomWidth: 3,
-    borderBottomColor: '#ccff34',
   },
 
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
+  cardFinalizada: {
+    opacity: 0.6,
   },
-
-/*   indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#ffffff',
-    marginRight: 10,
-  }, */
 
   titulo: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: 'bold',
     color: '#ccff34',
-    flex: 1,
+    marginBottom: 6,
+  },
+
+  tituloFinalizado: {
+    textDecorationLine: 'line-through',
   },
 
   descripcion: {
     fontSize: 15,
     color: '#e7ff9f',
-    lineHeight: 24,
+    lineHeight: 22,
   },
 
-  empty: {
-    color: '#777',
-    textAlign: 'center',
-    marginTop: 60,
-    fontSize: 16,
+  descripcionFinalizada: {
+    color: '#aaa',
   },
 
 });

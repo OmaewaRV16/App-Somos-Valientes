@@ -53,7 +53,6 @@ export default function CuponesPorNegocio({ route }) {
 
     return (
       <View style={{ marginBottom: 30 }}>
-
         <View style={styles.card}>
 
           <Image
@@ -118,33 +117,6 @@ export default function CuponesPorNegocio({ route }) {
           )}
 
         </View>
-
-        <View style={styles.redesSergioBox}>
-          <Text style={styles.redesTituloBox}>
-            Sigue nuestras redes sociales:
-          </Text>
-
-          <View style={styles.redesRow}>
-            {item.facebookSergio && (
-              <TouchableOpacity onPress={() => abrirLink(item.facebookSergio)}>
-                <Image source={require('../assets/facebook.png')} style={styles.iconoRed}/>
-              </TouchableOpacity>
-            )}
-
-            {item.instagramSergio && (
-              <TouchableOpacity onPress={() => abrirLink(item.instagramSergio)}>
-                <Image source={require('../assets/instagram.png')} style={styles.iconoRed}/>
-              </TouchableOpacity>
-            )}
-
-            {item.tiktokSergio && (
-              <TouchableOpacity onPress={() => abrirLink(item.tiktokSergio)}>
-                <Image source={require('../assets/tiktok.png')} style={styles.iconoRed}/>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
       </View>
     );
   };
@@ -183,13 +155,43 @@ export default function CuponesPorNegocio({ route }) {
 
       </View>
 
-      <FlatList
-        data={cupones}
-        keyExtractor={(item) => item._id}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-      />
+    <FlatList
+      data={cupones}
+      keyExtractor={(item) => item._id}
+      renderItem={renderItem}
+      contentContainerStyle={{ paddingBottom: 30 }}
+      showsVerticalScrollIndicator={false}
+
+      ListFooterComponent={
+        cupones.length > 0 ? (
+          <View style={styles.redesSergioBox}>
+            <Text style={styles.redesTituloBox}>
+              Sigue nuestras redes sociales:
+            </Text>
+
+            <View style={styles.redesRow}>
+              {cupones[0]?.facebookSergio && (
+                <TouchableOpacity onPress={() => abrirLink(cupones[0].facebookSergio)}>
+                  <Image source={require('../assets/facebook.png')} style={styles.iconoRed}/>
+                </TouchableOpacity>
+              )}
+
+              {cupones[0]?.instagramSergio && (
+                <TouchableOpacity onPress={() => abrirLink(cupones[0].instagramSergio)}>
+                  <Image source={require('../assets/instagram.png')} style={styles.iconoRed}/>
+                </TouchableOpacity>
+              )}
+
+              {cupones[0]?.tiktokSergio && (
+                <TouchableOpacity onPress={() => abrirLink(cupones[0].tiktokSergio)}>
+                  <Image source={require('../assets/tiktok.png')} style={styles.iconoRed}/>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        ) : null
+      }
+    />
 
     </View>
   );
@@ -342,7 +344,7 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 15,
     alignItems: 'center',
-    marginTop: 25,
+    marginTop: 0,
   },
 
   redesTituloBox: {
