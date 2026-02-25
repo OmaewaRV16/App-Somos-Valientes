@@ -9,14 +9,13 @@ import AdminCuponesScreen from '../screens/AdminCuponesScreen';
 import AdminAccionesScreen from '../screens/AdminAccionesScreen';
 import AdminPerfilScreen from '../screens/AdminPerfilScreen';
 import AdminComentariosScreen from '../screens/AdminComentariosScreen';
-import AdminNoticiaScreen from '../screens/AdminNoticiaScreen'; // 🔥 NUEVO
+import AdminNoticiaScreen from '../screens/AdminNoticiaScreen';
 
 const Tab = createBottomTabNavigator();
 
 export default function AdminTabs() {
   const [user, setUser] = useState(null);
 
-  // 🔐 Cargar usuario desde AsyncStorage
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -32,10 +31,7 @@ export default function AdminTabs() {
     loadUser();
   }, []);
 
-  // 🛡️ Evita render sin usuario
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <Tab.Navigator
@@ -68,7 +64,7 @@ export default function AdminTabs() {
               iconName = 'feedback';
               break;
             case 'Noticias':
-              iconName = 'article'; // 🔥 NUEVO
+              iconName = 'article';
               break;
             case 'Perfil':
               iconName = 'person';
@@ -111,7 +107,6 @@ export default function AdminTabs() {
         initialParams={{ user }}
       />
 
-      {/* 🔥 SOLO ADMIN VE NOTICIAS */}
       {user?.rol === "admin" && (
         <Tab.Screen
           name="Noticias"

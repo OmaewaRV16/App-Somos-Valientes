@@ -121,7 +121,7 @@ export default function CuponesPorNegocio({ route }) {
 
         <View style={styles.redesSergioBox}>
           <Text style={styles.redesTituloBox}>
-            Sigue a Sergio Vadillo:
+            Sigue nuestras redes sociales:
           </Text>
 
           <View style={styles.redesRow}>
@@ -155,11 +155,24 @@ export default function CuponesPorNegocio({ route }) {
       <Text style={styles.header}>{negocio.nombre}</Text>
 
       <View style={styles.negocioCard}>
+
         <View style={styles.logoSection}>
           <Image
             source={{ uri: negocio.logo }}
             style={styles.logo}
           />
+
+          {cupones[0]?.facebookNegocio && (
+            <TouchableOpacity
+              style={styles.facebookNegocioIcon}
+              onPress={() => abrirLink(cupones[0].facebookNegocio)}
+            >
+              <Image
+                source={require('../assets/facebook.png')}
+                style={styles.iconoFacebookNegocio}
+              />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.descripcionSection}>
@@ -167,6 +180,7 @@ export default function CuponesPorNegocio({ route }) {
             {cupones[0]?.descripcionNegocio}
           </Text>
         </View>
+
       </View>
 
       <FlatList
@@ -206,6 +220,7 @@ const styles = StyleSheet.create({
   },
 
   logoSection: {
+    position: 'relative',
     marginRight: 15,
   },
 
@@ -213,6 +228,17 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
+  },
+
+  facebookNegocioIcon: {
+    position: 'absolute',
+    bottom: -8,
+    right: -8,
+  },
+
+  iconoFacebookNegocio: {
+    width: 40,
+    height: 40,
   },
 
   descripcionSection: {

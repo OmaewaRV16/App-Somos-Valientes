@@ -7,18 +7,21 @@ import DetalleParticipante from '../screens/DetalleParticipante';
 import DetalleCupon from '../screens/DetalleCupon';
 import DetalleAccion from '../screens/DetalleAccion';
 import DetallePadrino from '../screens/DetallePadrino';
+
 import CrearCupon from '../screens/CrearCupon';
 import EditarCupon from '../screens/EditarCupon';
 import CrearAccion from '../screens/CrearAccion';
 import EditarAccion from '../screens/EditarAccion';
+
 import AdminNoticiaScreen from '../screens/AdminNoticiaScreen';
+import CrearNoticiaScreen from '../screens/CrearNoticiaScreen';
+import EditarNoticiaScreen from '../screens/EditarNoticiaScreen';
 
 const Stack = createNativeStackNavigator();
 
 export default function AdminStack() {
   const [user, setUser] = useState(null);
 
-  // 🔐 Cargar usuario desde AsyncStorage (sesión persistente)
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -34,14 +37,12 @@ export default function AdminStack() {
     loadUser();
   }, []);
 
-  // 🛡️ Evita render hasta tener usuario (sin spinner, sin crash)
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <Stack.Navigator>
-      {/* Tabs de Admin */}
+
+      {/* Tabs principales */}
       <Stack.Screen
         name="AdminTabs"
         component={AdminTabs}
@@ -49,7 +50,7 @@ export default function AdminStack() {
         options={{ headerShown: false }}
       />
 
-      {/* Detalles accesibles desde cualquier pestaña */}
+      {/* Detalles */}
       <Stack.Screen
         name="DetalleParticipante"
         component={DetalleParticipante}
@@ -71,6 +72,7 @@ export default function AdminStack() {
         options={{ title: 'Detalle Padrino' }}
       />
 
+      {/* Cupones */}
       <Stack.Screen
         name="CrearCupon"
         component={CrearCupon}
@@ -81,6 +83,8 @@ export default function AdminStack() {
         component={EditarCupon}
         options={{ title: 'Editar Cupón' }}
       />
+
+      {/* Acciones */}
       <Stack.Screen
         name="CrearAccion"
         component={CrearAccion}
@@ -92,11 +96,23 @@ export default function AdminStack() {
         options={{ title: 'Editar Acción' }}
       />
 
+      {/* Noticias */}
       <Stack.Screen
         name="AdminNoticia"
         component={AdminNoticiaScreen}
         options={{ title: 'Administrar Noticias' }}
       />
+      <Stack.Screen
+        name="CrearNoticia"
+        component={CrearNoticiaScreen}
+        options={{ title: 'Crear Noticia' }}
+      />
+      <Stack.Screen
+        name="EditarNoticia"
+        component={EditarNoticiaScreen}
+        options={{ title: 'Editar Noticia' }}
+      />
+
     </Stack.Navigator>
   );
 }
