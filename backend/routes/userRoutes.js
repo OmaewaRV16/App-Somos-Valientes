@@ -23,8 +23,9 @@ router.post('/register', async (req, res) => {
       rol
     } = req.body;
 
+    // 🔥 DIRECCIÓN YA NO ES OBLIGATORIA
     if (!apellidoP || !apellidoM || !nombres || !fechaNac ||
-        !direccion || !celular || !password || !rol) {
+        !celular || !password || !rol) {
       return res.status(400).json({ message: 'Faltan datos obligatorios' });
     }
 
@@ -42,7 +43,7 @@ router.post('/register', async (req, res) => {
       apellidoM,
       nombres,
       fechaNac,
-      direccion,
+      direccion: direccion || null, // 🔥 OPCIONAL
       celular,
       password: hashedPassword,
       rol,
