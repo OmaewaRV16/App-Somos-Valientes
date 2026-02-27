@@ -56,12 +56,11 @@ export default function RegisterScreen({ navigation }) {
       !apellidoM ||
       !nombres ||
       !fechaNac ||
-      !direccion ||
       !celular ||
       !password ||
       !confirmPassword
     ) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
+      Alert.alert('Error', 'Por favor completa los campos obligatorios');
       return;
     }
 
@@ -76,7 +75,7 @@ export default function RegisterScreen({ navigation }) {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/users/register`, { // ✅ CORREGIDO
+      const response = await fetch(`${API_URL}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -84,7 +83,7 @@ export default function RegisterScreen({ navigation }) {
           apellidoM,
           nombres,
           fechaNac,
-          direccion,
+          direccion, // OPCIONAL
           celular,
           password,
           rol,
@@ -106,7 +105,6 @@ export default function RegisterScreen({ navigation }) {
       });
 
     } catch (error) {
-      console.log(error);
       Alert.alert("Error", "No se pudo conectar con el servidor");
     }
   };
@@ -142,7 +140,13 @@ export default function RegisterScreen({ navigation }) {
               style={styles.input}
             />
 
-            <TextInput mode="outlined" label="Dirección" value={direccion} onChangeText={setDireccion} style={styles.input} />
+            <TextInput
+              mode="outlined"
+              label="Dirección (Opcional)"
+              value={direccion}
+              onChangeText={setDireccion}
+              style={styles.input}
+            />
 
             <TextInput
               mode="outlined"
@@ -183,10 +187,10 @@ export default function RegisterScreen({ navigation }) {
                 <RadioButton value="participante" color="#000" />
                 <Text>Participante</Text>
               </View>
-              <View style={styles.radioRow}>
+{/*               <View style={styles.radioRow}>
                 <RadioButton value="padrino" color="#000" />
                 <Text>Aportante</Text>
-              </View>
+              </View> */}
             </RadioButton.Group>
 
             <Button

@@ -3,7 +3,7 @@
     "name": "Sociedad Valiente",
     "slug": "App-Somos-Valientes",
     "scheme": "appsomosvalientes",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
@@ -17,16 +17,17 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.AppSomosValientes",
-      "buildNumber": "11",
+      "buildNumber": "12",
       "infoPlist": {
         "CFBundleDisplayName": "Sociedad Valiente",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Sociedad Valiente solicita acceso a tu galería únicamente para que puedas seleccionar y subir una foto de perfil que será visible en tu cuenta dentro de la aplicación."
       }
     },
 
     "android": {
       "package": "com.anonymous.AppSomosValientes",
-      "versionCode": 8,
+      "versionCode": 9,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
