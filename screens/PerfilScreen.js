@@ -13,8 +13,11 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
+
+const BASE_HEIGHT = 950;
+const scale = height / BASE_HEIGHT;
 
 export default function PerfilScreen({ navigation }) {
 
@@ -23,113 +26,68 @@ export default function PerfilScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
-  // ==========================
-  // CARGAR USUARIO
-  // ==========================
   useEffect(() => {
     const cargarUsuario = async () => {
       const data = await AsyncStorage.getItem('currentUser');
       if (data) {
         const parsedUser = JSON.parse(data);
         setUser(parsedUser);
-
-        // 🔥 Cargar foto desde MongoDB
-        if (parsedUser.foto) {
-          setImagen(parsedUser.foto);
-        }
+        if (parsedUser.foto) setImagen(parsedUser.foto);
       }
     };
     cargarUsuario();
   }, []);
 
-  // ==========================
-  // SUBIR FOTO A CLOUDINARY
-  // ==========================
-  const seleccionarImagen = async () => {
-    try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería.');
-        return;
-      }
+  // 📸 CAMBIAR FOTO
+  const cambiarFoto = async () => {
+    const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.7,
-      });
+    if (!permiso.granted) {
+      Alert.alert('Permiso requerido', 'Necesitamos acceso a tu galería.');
+      return;
+    }
 
-      if (!result.canceled) {
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
 
-        const uri = result.assets[0].uri;
+    if (!resultado.canceled) {
+      const nuevaImagen = resultado.assets[0].uri;
 
-        const formData = new FormData();
-        formData.append('foto', {
-          uri,
-          name: 'profile.jpg',
-          type: 'image/jpeg',
-        });
+      const updatedUser = { ...user, foto: nuevaImagen };
 
-        const response = await fetch(
-          `${API_URL}/api/users/${user._id}/foto`,
-          {
-            method: 'PUT',
-            body: formData,
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-
-        const updatedUser = await response.json();
-
-        // 🔥 Actualizar imagen en pantalla
-        setImagen(updatedUser.foto);
-
-        // 🔥 Actualizar usuario guardado
-        await AsyncStorage.setItem(
-          'currentUser',
-          JSON.stringify(updatedUser)
-        );
-      }
-
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo subir la imagen.');
+      setImagen(nuevaImagen);
+      setUser(updatedUser);
+      await AsyncStorage.setItem('currentUser', JSON.stringify(updatedUser));
     }
   };
 
-  // ==========================
-  // CERRAR SESIÓN
-  // ==========================
-  const cerrarSesion = () => {
+  // 🚪 CERRAR SESIÓN
+  const cerrarSesion = async () => {
     Alert.alert(
       'Cerrar sesión',
-      '¿Deseas cerrar sesión?',
+      '¿Seguro que deseas salir?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Sí',
-          style: 'destructive',
           onPress: async () => {
             await AsyncStorage.removeItem('currentUser');
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Welcome' }],
-            });
-          },
-        },
+            navigation.replace('Welcome');
+          }
+        }
       ]
     );
   };
 
-  // ==========================
-  // ELIMINAR CUENTA
-  // ==========================
+  // 🗑 ELIMINAR CUENTA
   const eliminarCuenta = () => {
     Alert.alert(
       'Eliminar cuenta',
-      'Esta acción es PERMANENTE y no se puede deshacer.\n\n¿Deseas continuar?',
+      'Esta acción no se puede deshacer. ¿Continuar?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -137,38 +95,32 @@ export default function PerfilScreen({ navigation }) {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await fetch(
-                `${API_URL}/api/users/${user._id}`,
-                { method: 'DELETE' }
-              );
-
-              if (!response.ok) {
-                const data = await response.json();
-                Alert.alert('Error', data.message || 'No se pudo eliminar la cuenta');
-                return;
-              }
+              await fetch(`${API_URL}/api/usuarios/${user.celular}`, {
+                method: 'DELETE',
+              });
 
               await AsyncStorage.removeItem('currentUser');
-
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Welcome' }],
-              });
+              navigation.replace('Welcome');
             } catch (error) {
-              Alert.alert('Error', 'No se pudo conectar con el servidor');
+              Alert.alert('Error', 'No se pudo eliminar la cuenta.');
             }
-          },
-        },
+          }
+        }
       ]
     );
   };
 
+  // 🔥 ABRIR MODAL
   const abrirModal = () => {
     setModalVisible(true);
     scaleAnim.setValue(0);
-    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true
+    }).start();
   };
 
+  // 🔥 CERRAR MODAL
   const cerrarModal = () => {
     Animated.timing(scaleAnim, {
       toValue: 0,
@@ -183,7 +135,7 @@ export default function PerfilScreen({ navigation }) {
   return (
     <View style={styles.container}>
 
-      {/* HEADER VERDE */}
+      {/* HEADER */}
       <View style={styles.header}>
 
         <View style={styles.headerTopRow}>
@@ -207,7 +159,6 @@ export default function PerfilScreen({ navigation }) {
           style={styles.iconBottomRight}
           resizeMode="contain"
         />
-
       </View>
 
       {/* FOTO */}
@@ -230,7 +181,7 @@ export default function PerfilScreen({ navigation }) {
 
         <Text style={styles.rol}>{user.rol?.toUpperCase()}</Text>
 
-        <TouchableOpacity style={styles.botonFoto} onPress={seleccionarImagen}>
+        <TouchableOpacity style={styles.botonFoto} onPress={cambiarFoto}>
           <Text style={styles.botonFotoTexto}>Cambiar Foto</Text>
         </TouchableOpacity>
 
@@ -254,15 +205,23 @@ export default function PerfilScreen({ navigation }) {
         <Text style={styles.botonEliminarTexto}>Eliminar Cuenta</Text>
       </TouchableOpacity>
 
+      {/* MODAL IMAGEN */}
       <Modal visible={modalVisible} transparent animationType="fade">
-        <TouchableOpacity style={styles.modalFondo} activeOpacity={1} onPress={cerrarModal}>
+        <TouchableOpacity
+          style={styles.modalFondo}
+          activeOpacity={1}
+          onPress={cerrarModal}
+        >
           <Animated.Image
             source={
               imagen
                 ? { uri: imagen }
                 : require('../assets/default-profile.png')
             }
-            style={[styles.modalImagen, { transform: [{ scale: scaleAnim }] }]}
+            style={[
+              styles.modalImagen,
+              { transform: [{ scale: scaleAnim }] }
+            ]}
             resizeMode="contain"
           />
         </TouchableOpacity>
@@ -281,132 +240,131 @@ const styles = StyleSheet.create({
 
   header: {
     width: '100%',
-    height: 250,
+    height: 250 * scale,
     backgroundColor: '#ccff34',
     position: 'relative',
   },
 
   headerTopRow: {
     position: 'absolute',
-    top: 110,
+    top: 110 * scale,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 10,
   },
 
   slogan: {
-    fontSize: 20,
+    fontSize: 20 * scale,
     fontWeight: 'bold',
     color: '#000',
     marginRight: 12,
   },
 
   headerLogo: {
-    width: 100,
-    height: 65,
+    width: 100 * scale,
+    height: 65 * scale,
   },
 
   iconTopLeft: {
     position: 'absolute',
-    top: 60,
+    top: 60 * scale,
     left: 10,
-    width: 90,
-    height: 90,
+    width: 90 * scale,
+    height: 90 * scale,
   },
 
   iconBottomRight: {
     position: 'absolute',
     bottom: 0,
     right: -30,
-    width: 90,
-    height: 90,
+    width: 90 * scale,
+    height: 90 * scale,
   },
 
   imageWrapper: {
     position: 'absolute',
-    top: 180,
-    overflow: 'hidden',
-    elevation: 15,
+    top: 180 * scale,
   },
 
   foto: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
+    width: 160 * scale,
+    height: 160 * scale,
+    borderRadius: (160 * scale) / 2,
   },
 
   card: {
-    marginTop: 100,
+    marginTop: 100 * scale,
     width: '90%',
     backgroundColor: '#121212',
-    borderRadius: 25,
-    padding: 25,
+    borderRadius: 25 * scale,
+    padding: 25 * scale,
     alignItems: 'center',
   },
 
   nombre: {
-    fontSize: 22,
+    fontSize: 22 * scale,
     fontWeight: 'bold',
     color: '#ccff34',
   },
 
   rol: {
-    fontSize: 14,
+    fontSize: 14 * scale,
     color: '#aaa',
-    marginBottom: 15,
+    marginBottom: 15 * scale,
   },
 
   botonFoto: {
     backgroundColor: '#ccff34',
-    paddingVertical: 8,
-    paddingHorizontal: 25,
-    borderRadius: 20,
-    marginBottom: 20,
+    paddingVertical: 8 * scale,
+    paddingHorizontal: 25 * scale,
+    borderRadius: 20 * scale,
+    marginBottom: 20 * scale,
   },
 
   botonFotoTexto: {
     color: '#000',
     fontWeight: 'bold',
+    fontSize: 14 * scale,
   },
 
   infoBox: {
     width: '100%',
-    marginTop: 10,
+    marginTop: 10 * scale,
   },
 
   infoLabel: {
     color: '#888',
-    fontSize: 12,
-    marginTop: 10,
+    fontSize: 12 * scale,
+    marginTop: 10 * scale,
   },
 
   infoValue: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 15 * scale,
   },
 
   botonCerrar: {
-    marginTop: 25,
+    marginTop: 25 * scale,
     backgroundColor: '#ccff34',
-    paddingVertical: 12,
+    paddingVertical: 12 * scale,
     width: '90%',
-    borderRadius: 30,
+    borderRadius: 30 * scale,
     alignItems: 'center',
   },
 
   botonCerrarTexto: {
     fontWeight: 'bold',
     color: '#000',
+    fontSize: 15 * scale,
   },
 
   botonEliminar: {
-    marginTop: 15,
+    marginTop: 15 * scale,
     backgroundColor: '#222',
-    paddingVertical: 12,
+    paddingVertical: 12 * scale,
     width: '90%',
-    borderRadius: 30,
+    borderRadius: 30 * scale,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ccff34',
@@ -415,6 +373,7 @@ const styles = StyleSheet.create({
   botonEliminarTexto: {
     color: '#ccff34',
     fontWeight: 'bold',
+    fontSize: 15 * scale,
   },
 
   modalFondo: {

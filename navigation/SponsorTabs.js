@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CuponeraScreen from '../screens/CuponeraScreen';
 import AccionesScreen from '../screens/AccionesScreen';
 import ApoyarScreen from '../screens/ApoyarScreen';
-import ComentariosScreen from '../screens/ComentariosScreen';
+import SumateScreen from '../screens/SumateScreen';
 import PerfilScreen from '../screens/PerfilScreen';
 import TarjetaVirtualScreen from '../screens/TarjetaVirtualScreen';
 
@@ -17,7 +17,6 @@ const Tab = createBottomTabNavigator();
 export default function SponsorTabs() {
   const [user, setUser] = useState(null);
 
-  // 🔐 Cargar usuario desde AsyncStorage (sesión persistente)
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -33,11 +32,10 @@ export default function SponsorTabs() {
     loadUser();
   }, []);
 
-  // ⬅️ Manejo del botón atrás (Android)
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        BackHandler.exitApp(); // cierra la app
+        BackHandler.exitApp();
         return true;
       };
 
@@ -50,10 +48,7 @@ export default function SponsorTabs() {
     }, [])
   );
 
-  // 🛡️ Evita render hasta tener usuario (sin spinner, sin crash)
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <Tab.Navigator
@@ -62,9 +57,10 @@ export default function SponsorTabs() {
         let iconName;
 
         if (route.name === 'Cuponera') iconName = 'pricetag';
-        else if (route.name === 'Acciones') iconName = 'flash';
+        else if (route.name === 'Actividades') iconName = 'flash';
         else if (route.name === 'Apoyar') iconName = 'card';
-        else if (route.name === 'Comentarios') iconName = 'chatbubbles';
+        else if (route.name === 'Noticias') iconName = 'newspaper';
+        else if (route.name === 'Sumate') iconName = 'people';
         else if (route.name === 'Perfil') iconName = 'person';
 
         return {
@@ -72,10 +68,10 @@ export default function SponsorTabs() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name={iconName} size={size} color={color} />
           ),
-          tabBarActiveTintColor: '#ffffffff',
+          tabBarActiveTintColor: '#ffffff',
           tabBarInactiveTintColor: '#ccff34',
           tabBarStyle: {
-            backgroundColor: '#000000ff',
+            backgroundColor: '#000',
             borderTopWidth: 0,
             elevation: 0,
           },
@@ -103,8 +99,8 @@ export default function SponsorTabs() {
         initialParams={{ user }}
       />
       <Tab.Screen
-        name="Comentanos"
-        component={ComentariosScreen}
+        name="Sumate"
+        component={SumateScreen}
         initialParams={{ user }}
       />
       <Tab.Screen

@@ -9,12 +9,14 @@ import {
   Linking,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
 export default function CuponesPorNegocio({ route }) {
   const { negocio } = route.params;
   const [cupones, setCupones] = useState([]);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     cargarCupones();
@@ -83,13 +85,11 @@ export default function CuponesPorNegocio({ route }) {
 
           {item.whatsapp && (
             <View style={styles.botonesContainer}>
-
               <Text style={styles.textoBotonContainer}>
                 Canjea tu cupón por WhatsApp o Llamada:
               </Text>
 
               <View style={styles.filaBotones}>
-
                 <TouchableOpacity
                   style={styles.botonWhatsapp}
                   onPress={() => abrirWhatsApp(item.whatsapp)}
@@ -111,7 +111,6 @@ export default function CuponesPorNegocio({ route }) {
                   />
                   <Text style={styles.textoBoton}>Llamar</Text>
                 </TouchableOpacity>
-
               </View>
             </View>
           )}
@@ -122,89 +121,100 @@ export default function CuponesPorNegocio({ route }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: '#000' }}
+      edges={['bottom']}
+    >
+      <FlatList
+        data={cupones}
+        keyExtractor={(item) => item._id}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
 
-      <Text style={styles.header}>{negocio.nombre}</Text>
+        /* 🔥 SCROLL NATURAL */
+        bounces
+        alwaysBounceVertical
+        overScrollMode="always"
+        decelerationRate="fast"
 
-      <View style={styles.negocioCard}>
+        style={{ backgroundColor: '#000' }}
+        contentContainerStyle={{
+          backgroundColor: '#000',
+          paddingHorizontal: 20,
+          paddingBottom: 40 + insets.bottom, // 🔥 espacio dinámico inferior
+          flexGrow: 1,
+        }}
 
-        <View style={styles.logoSection}>
-          <Image
-            source={{ uri: negocio.logo }}
-            style={styles.logo}
-          />
+        ListHeaderComponent={
+          <View style={{ backgroundColor: '#000' }}>
+            <Text style={styles.header}>{negocio.nombre}</Text>
 
-          {cupones[0]?.facebookNegocio && (
-            <TouchableOpacity
-              style={styles.facebookNegocioIcon}
-              onPress={() => abrirLink(cupones[0].facebookNegocio)}
-            >
-              <Image
-                source={require('../assets/facebook.png')}
-                style={styles.iconoFacebookNegocio}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
+            <View style={styles.negocioCard}>
+              <View style={styles.logoSection}>
+                <Image
+                  source={{ uri: negocio.logo }}
+                  style={styles.logo}
+                />
 
-        <View style={styles.descripcionSection}>
-          <Text style={styles.descripcionNegocio}>
-            {cupones[0]?.descripcionNegocio}
-          </Text>
-        </View>
+                {cupones[0]?.facebookNegocio && (
+                  <TouchableOpacity
+                    style={styles.facebookNegocioIcon}
+                    onPress={() => abrirLink(cupones[0].facebookNegocio)}
+                  >
+                    <Image
+                      source={require('../assets/facebook.png')}
+                      style={styles.iconoFacebookNegocio}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
 
-      </View>
-
-    <FlatList
-      data={cupones}
-      keyExtractor={(item) => item._id}
-      renderItem={renderItem}
-      contentContainerStyle={{ paddingBottom: 30 }}
-      showsVerticalScrollIndicator={false}
-
-      ListFooterComponent={
-        cupones.length > 0 ? (
-          <View style={styles.redesSergioBox}>
-            <Text style={styles.redesTituloBox}>
-              Sigue nuestras redes sociales:
-            </Text>
-
-            <View style={styles.redesRow}>
-              {cupones[0]?.facebookSergio && (
-                <TouchableOpacity onPress={() => abrirLink(cupones[0].facebookSergio)}>
-                  <Image source={require('../assets/facebook.png')} style={styles.iconoRed}/>
-                </TouchableOpacity>
-              )}
-
-              {cupones[0]?.instagramSergio && (
-                <TouchableOpacity onPress={() => abrirLink(cupones[0].instagramSergio)}>
-                  <Image source={require('../assets/instagram.png')} style={styles.iconoRed}/>
-                </TouchableOpacity>
-              )}
-
-              {cupones[0]?.tiktokSergio && (
-                <TouchableOpacity onPress={() => abrirLink(cupones[0].tiktokSergio)}>
-                  <Image source={require('../assets/tiktok.png')} style={styles.iconoRed}/>
-                </TouchableOpacity>
-              )}
+              <View style={styles.descripcionSection}>
+                <Text style={styles.descripcionNegocio}>
+                  {cupones[0]?.descripcionNegocio}
+                </Text>
+              </View>
             </View>
           </View>
-        ) : null
-      }
-    />
+        }
 
-    </View>
+        ListFooterComponent={
+          cupones.length > 0 ? (
+            <View style={{ backgroundColor: '#000' }}>
+              <View style={styles.redesSergioBox}>
+                <Text style={styles.redesTituloBox}>
+                  Sigue nuestras redes sociales:
+                </Text>
+
+                <View style={styles.redesRow}>
+                  {cupones[0]?.facebookSergio && (
+                    <TouchableOpacity onPress={() => abrirLink(cupones[0].facebookSergio)}>
+                      <Image source={require('../assets/facebook.png')} style={styles.iconoRed}/>
+                    </TouchableOpacity>
+                  )}
+
+                  {cupones[0]?.instagramSergio && (
+                    <TouchableOpacity onPress={() => abrirLink(cupones[0].instagramSergio)}>
+                      <Image source={require('../assets/instagram.png')} style={styles.iconoRed}/>
+                    </TouchableOpacity>
+                  )}
+
+                  {cupones[0]?.tiktokSergio && (
+                    <TouchableOpacity onPress={() => abrirLink(cupones[0].tiktokSergio)}>
+                      <Image source={require('../assets/tiktok.png')} style={styles.iconoRed}/>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            </View>
+          ) : null
+        }
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-    paddingHorizontal: 20,
-  },
-
   header: {
     fontSize: 26,
     fontWeight: 'bold',
@@ -344,7 +354,6 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 15,
     alignItems: 'center',
-    marginTop: 0,
   },
 
   redesTituloBox: {
@@ -379,5 +388,4 @@ const styles = StyleSheet.create({
     height: 60,
     resizeMode: 'contain',
   },
-
 });

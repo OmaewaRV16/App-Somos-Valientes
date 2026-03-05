@@ -1,15 +1,15 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   ImageBackground,
   TouchableOpacity,
   Linking,
   Alert,
   Image,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,20 +24,14 @@ export default function NoticiasScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const isFocused = useIsFocused();
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   const fetchNoticias = useCallback(async () => {
     try {
       const resp = await fetch(API_URL);
-
-      if (!resp.ok) {
-        Alert.alert('Error', 'No se pudieron cargar las noticias');
-        return;
-      }
-
       const data = await resp.json();
       setNoticias(data);
     } catch (error) {
-      console.log(error);
       Alert.alert('Error', 'No se pudieron cargar las noticias');
     } finally {
       setLoading(false);
@@ -61,7 +55,6 @@ export default function NoticiasScreen() {
   const abrirLink = async (url) => {
     const supported = await Linking.canOpenURL(url);
     if (supported) Linking.openURL(url);
-    else Alert.alert('Error', 'No se pudo abrir la noticia');
   };
 
   const renderItem = ({ item }) => (
@@ -71,6 +64,13 @@ export default function NoticiasScreen() {
         style={styles.imagen}
         imageStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
       >
+        {/* 🔥 Sombra superior MÁS SUAVE */}
+        <LinearGradient
+          colors={['rgba(0,0,0,0.55)', 'rgba(0,0,0,0.25)', 'transparent']}
+          style={styles.topImageShadow}
+        />
+
+        {/* Logo */}
         <View style={styles.logoContainer}>
           <Image
             source={require('../assets/logo-verde.png')}
@@ -79,8 +79,9 @@ export default function NoticiasScreen() {
           />
         </View>
 
+        {/* Sombra inferior */}
         <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.95)']}
+          colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,1)']}
           style={styles.overlay}
         >
           <View style={styles.badge}>
@@ -111,9 +112,6 @@ export default function NoticiasScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="#ccff34" />
-          <Text style={styles.loadingText}>
-            Cargando noticias...
-          </Text>
         </View>
       </SafeAreaView>
     );
@@ -121,64 +119,87 @@ export default function NoticiasScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <FlatList
+      {/* Sombra dinámica inferior */}
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.bottomShadow,
+          {
+            opacity: scrollY.interpolate({
+              inputRange: [0, 120],
+              outputRange: [0, 1],
+              extrapolate: 'clamp',
+            }),
+          },
+        ]}
+      >
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,1)']}
+          style={{ flex: 1 }}
+        />
+      </Animated.View>
+
+      <Animated.FlatList
         data={noticias}
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
         contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={true}
+        indicatorStyle="white"
         refreshing={refreshing}
         onRefresh={onRefresh}
-        progressViewOffset={20}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
       />
     </SafeAreaView>
   );
 }
 
-/* ===========================
-   ESTILOS
-=========================== */
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#0a0a0a',
   },
 
   container: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
+    paddingRight: 10,
   },
 
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  loadingText: {
-    color: '#ccff34',
-    marginTop: 10,
+  bottomShadow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+    zIndex: 10,
   },
 
   card: {
     backgroundColor: '#121212',
     borderRadius: 28,
-    marginBottom: 35,
+    marginBottom: 30,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.6,
-    shadowRadius: 25,
-    elevation: 15,
     borderBottomColor: '#ccff34',
-    borderBottomWidth: 3,
+    borderBottomWidth: 2,
   },
 
   imagen: {
     width: '100%',
     height: 270,
     justifyContent: 'flex-end',
+  },
+
+  topImageShadow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 120,
   },
 
   logoContainer: {
@@ -244,5 +265,11 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
     fontSize: 15,
+  },
+
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

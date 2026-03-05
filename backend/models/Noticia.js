@@ -5,7 +5,18 @@ const noticiaSchema = new mongoose.Schema({
   descripcion: { type: String, required: true },
   imagen: { type: String, required: true },
   link: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
+
+  // Fecha que el admin decide
+  fechaPublicacion: { 
+    type: Date, 
+    required: true 
+  },
+
+  // Fecha real de creación en BD
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  },
 });
 
 module.exports = mongoose.model('Noticia', noticiaSchema);

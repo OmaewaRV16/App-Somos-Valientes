@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Text,
-  FlatList,
   TouchableOpacity,
   StyleSheet,
   Alert,
@@ -9,20 +8,19 @@ import {
   View,
   Image,
   TextInput,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useIsFocused } from '@react-navigation/native';
 
 const agruparPorCategoria = (cupones) => {
   const categorias = {};
-
   cupones.forEach((cupon) => {
     const categoria = cupon.categoria || 'Otros';
     const nombre = cupon.nombre?.trim() || 'Sin nombre';
 
-    if (!categorias[categoria]) {
-      categorias[categoria] = {};
-    }
+    if (!categorias[categoria]) categorias[categoria] = {};
 
     if (!categorias[categoria][nombre]) {
       categorias[categoria][nombre] = {
@@ -48,8 +46,8 @@ export default function CuponeraScreen({ route, navigation }) {
   const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
+  const scrollY = useRef(new Animated.Value(0)).current;
   const isFocused = useIsFocused();
 
   const fetchCupones = useCallback(async () => {
@@ -58,16 +56,10 @@ export default function CuponeraScreen({ route, navigation }) {
         'https://app-somos-valientes-production.up.railway.app/api/cupones'
       );
       const data = await resp.json();
-
-      if (!resp.ok) {
-        Alert.alert('Error', 'No se pudieron cargar los cupones');
-        return;
-      }
-
       const agrupados = agruparPorCategoria(data);
       setCategorias(agrupados);
       setFiltered(agrupados);
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'No se pudieron cargar los cupones');
     } finally {
       setLoading(false);
@@ -78,12 +70,6 @@ export default function CuponeraScreen({ route, navigation }) {
     setLoading(true);
     fetchCupones();
   }, [isFocused]);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchCupones();
-    setRefreshing(false);
-  };
 
   const buscar = (text) => {
     setSearch(text);
@@ -105,184 +91,179 @@ export default function CuponeraScreen({ route, navigation }) {
     setFiltered(filtrado);
   };
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      {loading ? (
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="#ccff34" />
-          <Text style={{ color: '#ccff34' }}>Cargando cupones...</Text>
         </View>
-      ) : (
-        <>
-          <View style={styles.searchBox}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar negocio..."
-              placeholderTextColor="#777"
-              value={search}
-              onChangeText={buscar}
-            />
-          </View>
+      </SafeAreaView>
+    );
+  }
 
-          <FlatList
-            contentContainerStyle={styles.container}
-            data={filtered}
-            keyExtractor={(item) => item.categoria}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            renderItem={({ item }) => (
-              <View>
+  return (
+    <SafeAreaView style={styles.safeArea}>
 
-                {/* CATEGORÍA */}
-                <View style={styles.categoriaRow}>
-                  <Text style={styles.categoriaTitulo}>
-                    {item.categoria}
+      {/* 🔥 Sombra inferior dinámica */}
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.bottomShadow,
+          {
+            opacity: scrollY.interpolate({
+              inputRange: [0, 80],
+              outputRange: [0, 1],
+              extrapolate: 'clamp',
+            }),
+          },
+        ]}
+      >
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,1)']}
+          style={{ flex: 1 }}
+        />
+      </Animated.View>
+
+      <View style={styles.searchBox}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar negocio..."
+          placeholderTextColor="#666"
+          value={search}
+          onChangeText={buscar}
+        />
+      </View>
+
+      <Animated.FlatList
+        contentContainerStyle={styles.container}
+        data={filtered}
+        keyExtractor={(item) => item.categoria}
+        showsVerticalScrollIndicator={true}
+        indicatorStyle="white"
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+        renderItem={({ item }) => (
+          <View>
+            <Text style={styles.categoriaTitulo}>
+              {item.categoria.toUpperCase()}
+            </Text>
+
+            {item.negocios.map((negocio) => (
+              <TouchableOpacity
+                key={negocio.nombre}
+                style={styles.card}
+                activeOpacity={0.85}
+                onPress={() =>
+                  navigation.navigate('CuponesPorNegocio', {
+                    negocio,
+                    user,
+                  })
+                }
+              >
+                {negocio.logo ? (
+                  <Image
+                    source={{ uri: negocio.logo }}
+                    style={styles.logo}
+                  />
+                ) : (
+                  <View style={styles.logoPlaceholder}>
+                    <Text style={{ color: '#ccff34' }}>SV</Text>
+                  </View>
+                )}
+
+                <View style={styles.info}>
+                  <Text style={styles.titulo}>
+                    {negocio.nombre}
                   </Text>
-                  <View style={styles.linea} />
+
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>
+                      {negocio.cupones.length} cupón(es)
+                    </Text>
+                  </View>
                 </View>
 
-                {/* NEGOCIOS */}
-                {item.negocios.map((negocio) => (
-                  <TouchableOpacity
-                    key={negocio.nombre}
-                    style={styles.cupon}
-                    activeOpacity={0.85}
-                    onPress={() =>
-                      navigation.navigate('CuponesPorNegocio', {
-                        negocio,
-                        user,
-                      })
-                    }
-                  >
-                    <View style={styles.logoWrapper}>
-                      {negocio.logo ? (
-                        <Image
-                          source={{ uri: negocio.logo }}
-                          style={styles.logo}
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <View style={styles.logoPlaceholder}>
-                          <Text style={styles.logoPlaceholderText}>SV</Text>
-                        </View>
-                      )}
-                    </View>
-
-                    <View style={styles.info}>
-                      <Text style={styles.titulo}>{negocio.nombre}</Text>
-
-                      <View style={styles.badge}>
-                        <Text style={styles.badgeText}>
-                          {negocio.cupones.length} cupón(es)
-                        </Text>
-                      </View>
-                    </View>
-
-                    <Text style={styles.arrow}>›</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          />
-        </>
-      )}
+                <Text style={styles.arrow}>›</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      />
     </SafeAreaView>
   );
 }
 
-/* ======================= */
-/* NUEVOS ESTILOS PREMIUM */
-/* ======================= */
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#0a0a0a',
+  },
+
+  bottomShadow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+    zIndex: 10,
   },
 
   searchBox: {
-    paddingHorizontal: 20,
-    paddingTop: 15,
+    padding: 20,
   },
 
   searchInput: {
     backgroundColor: '#111',
-    borderColor: '#ccff34',
-    borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 14,
-    fontSize: 16,
-    color: '#ccff34',
-    marginBottom: 15,
+    color: '#fff',
+    borderWidth: 1,
+    borderColor: '#222',
   },
 
   container: {
     paddingHorizontal: 20,
-    paddingBottom: 100,
-  },
-
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  categoriaRow: {
-    marginTop: 20,
-    marginBottom: 10,
+    paddingBottom: 120,
   },
 
   categoriaTitulo: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 14,
     color: '#ccff34',
-    marginBottom: 5,
+    marginTop: 15,
+    marginBottom: 15,
+    fontWeight: 'bold',
+    letterSpacing: 1,
   },
 
-  linea: {
-    height: 2,
-    width: 40,
-    backgroundColor: '#ccff34',
-  },
-
-  cupon: {
+  card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ccff34',
-    padding: 18,
-    borderRadius: 20,
+    backgroundColor: '#121212',
+    padding: 16,
+    borderRadius: 18,
     marginBottom: 18,
-    shadowColor: '#ccff34',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-
-  logoWrapper: {
-    marginRight: 15,
+    borderBottomColor: '#ccff34',
+    borderBottomWidth: 2,
   },
 
   logo: {
-    width: 75,
-    height: 75,
-    borderRadius: 40,
-    backgroundColor: '#fff',
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    marginRight: 15,
   },
 
   logoPlaceholder: {
-    width: 75,
-    height: 75,
-    borderRadius: 20,
-    backgroundColor: '#000',
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: '#111',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-
-  logoPlaceholderText: {
-    color: '#ccff34',
-    fontWeight: 'bold',
-    fontSize: 20,
+    marginRight: 15,
   },
 
   info: {
@@ -290,18 +271,20 @@ const styles = StyleSheet.create({
   },
 
   titulo: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 8,
+    color: '#ccff34',
+    marginBottom: 6,
   },
 
   badge: {
     backgroundColor: '#000',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ccff34',
+    alignSelf: 'flex-start',
   },
 
   badgeText: {
@@ -312,7 +295,13 @@ const styles = StyleSheet.create({
 
   arrow: {
     fontSize: 26,
-    color: '#000',
+    color: '#ccff34',
     marginLeft: 10,
+  },
+
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

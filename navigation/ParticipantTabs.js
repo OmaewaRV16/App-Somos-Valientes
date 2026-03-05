@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CuponeraScreen from '../screens/CuponeraScreen';
 import AccionesScreen from '../screens/AccionesScreen';
 import TarjetaVirtualScreen from '../screens/TarjetaVirtualScreen';
-import ComentariosScreen from '../screens/ComentariosScreen';
+import SumateScreen from '../screens/SumateScreen';
 import PerfilScreen from '../screens/PerfilScreen';
 
 const Tab = createBottomTabNavigator();
@@ -63,7 +63,7 @@ export default function ParticipantTabs() {
         if (route.name === 'Cuponera') iconName = 'pricetag';
         else if (route.name === 'Actividades') iconName = 'flash';
         else if (route.name === 'Noticias') iconName = 'newspaper';
-        else if (route.name === 'Comentanos') iconName = 'chatbubbles';
+        else if (route.name === 'Sumate') iconName = 'add-circle';
         else if (route.name === 'Perfil') iconName = 'person';
 
         return {
@@ -97,8 +97,8 @@ export default function ParticipantTabs() {
         initialParams={{ user }}
       />
       <Tab.Screen
-        name="Comentanos"
-        component={ComentariosScreen}
+        name="Sumate"
+        component={SumateScreen}
         initialParams={{ user }}
       />
       <Tab.Screen

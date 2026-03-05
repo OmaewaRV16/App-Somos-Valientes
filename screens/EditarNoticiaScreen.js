@@ -22,9 +22,32 @@ export default function EditarNoticiaScreen({ route, navigation }) {
   const [imagen, setImagen] = useState(noticia?.imagen || '');
   const [link, setLink] = useState(noticia?.link || '');
 
+  // 🔥 NUEVO CAMPO FECHA
+  const [fechaPublicacion, setFechaPublicacion] = useState(
+    noticia?.fechaPublicacion
+      ? noticia.fechaPublicacion.substring(0, 10)
+      : ''
+  );
+
   const guardarCambios = async () => {
-    if (!titulo.trim() || !descripcion.trim() || !imagen.trim() || !link.trim()) {
+    if (
+      !titulo.trim() ||
+      !descripcion.trim() ||
+      !imagen.trim() ||
+      !link.trim() ||
+      !fechaPublicacion.trim()
+    ) {
       Alert.alert('Error', 'Completa todos los campos');
+      return;
+    }
+
+    // Validar formato YYYY-MM-DD
+    const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regexFecha.test(fechaPublicacion.trim())) {
+      Alert.alert(
+        'Formato inválido',
+        'La fecha debe estar en formato YYYY-MM-DD (ejemplo: 2026-03-05)'
+      );
       return;
     }
 
@@ -39,6 +62,7 @@ export default function EditarNoticiaScreen({ route, navigation }) {
             descripcion: descripcion.trim(),
             imagen: imagen.trim(),
             link: link.trim(),
+            fechaPublicacion: fechaPublicacion.trim(), // 🔥 NUEVO
           }),
         }
       );
@@ -91,6 +115,15 @@ export default function EditarNoticiaScreen({ route, navigation }) {
           onChangeText={setDescripcion}
           style={[styles.input, { height: 100 }]}
           multiline
+          placeholderTextColor="#999"
+        />
+
+        <Text style={styles.label}>Fecha de Publicación *</Text>
+        <TextInput
+          value={fechaPublicacion}
+          onChangeText={setFechaPublicacion}
+          style={styles.input}
+          placeholder="YYYY-MM-DD (ejemplo: 2026-03-05)"
           placeholderTextColor="#999"
         />
 

@@ -19,10 +19,27 @@ export default function CrearNoticiaScreen({ navigation }) {
   const [descripcion, setDescripcion] = useState('');
   const [imagen, setImagen] = useState('');
   const [link, setLink] = useState('');
+  const [fechaPublicacion, setFechaPublicacion] = useState('');
 
   const guardar = async () => {
-    if (!titulo.trim() || !descripcion.trim() || !imagen.trim() || !link.trim()) {
+    if (
+      !titulo.trim() ||
+      !descripcion.trim() ||
+      !imagen.trim() ||
+      !link.trim() ||
+      !fechaPublicacion.trim()
+    ) {
       Alert.alert('Error', 'Completa todos los campos obligatorios');
+      return;
+    }
+
+    // Validación básica formato YYYY-MM-DD
+    const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regexFecha.test(fechaPublicacion.trim())) {
+      Alert.alert(
+        'Formato inválido',
+        'La fecha debe estar en formato YYYY-MM-DD (ejemplo: 2026-03-05)'
+      );
       return;
     }
 
@@ -32,6 +49,7 @@ export default function CrearNoticiaScreen({ navigation }) {
         descripcion: descripcion.trim(),
         imagen: imagen.trim(),
         link: link.trim(),
+        fechaPublicacion: fechaPublicacion.trim(), // 🔥 NUEVO CAMPO
       };
 
       const res = await fetch(`${API_URL}/api/noticias`, {
@@ -91,6 +109,15 @@ export default function CrearNoticiaScreen({ navigation }) {
           placeholder="Contenido de la noticia..."
           placeholderTextColor="#999"
           multiline
+        />
+
+        <Text style={styles.label}>Fecha de Publicación *</Text>
+        <TextInput
+          value={fechaPublicacion}
+          onChangeText={setFechaPublicacion}
+          style={styles.input}
+          placeholder="YYYY-MM-DD (ejemplo: 2026-03-05)"
+          placeholderTextColor="#999"
         />
 
         <Text style={styles.label}>URL de la Imagen *</Text>
