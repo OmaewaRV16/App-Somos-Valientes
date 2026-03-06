@@ -16,41 +16,38 @@ const { width } = Dimensions.get('window');
 
 export default function DifusionScreen() {
 
-  const telefono = '9991234567'; // 🔥 CAMBIA ESTE NUMERO
+  const telefono = '9997478671';
+
   const mensaje =
-    'Hola, quiero apoyar la difusión de Sociedad Valiente con una barda o lona.';
+    'Hola, me interesa apoyar la difusión de Sociedad Valiente colocando una barda o lona. ¿Podrían brindarme información sobre cómo participar?';
 
   const abrirWhats = () => {
-    const url = `https://wa.me/52${telefono}?text=${encodeURIComponent(
-      mensaje
-    )}`;
+    const url = `https://wa.me/52${telefono}?text=${encodeURIComponent(mensaje)}`;
     Linking.openURL(url);
   };
 
   const llamar = () => {
-    Linking.openURL(`tel:${telefono}`);
+    Linking.openURL(`tel:+52${telefono}`);
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.container}>
 
-        {/* TITULO */}
+        {/* 🔥 NUEVO TITULO */}
         <Text style={styles.mainTitle}>
-          ¿Quieres ayudar a la difusión de este mensaje
-          con una barda o lona?
+            ¿Quieres ayudar a la difusión de este mensaje con una barda o lona?
         </Text>
 
         <Text style={styles.subTitle}>
-          Tu apoyo permite que más personas conozcan y se sumen
-          a Sociedad Valiente.
+            Haz que el mensaje llegue más lejos y más personas se sumen a Sociedad Valiente. ¡Juntos podemos lograr un cambio real!.
         </Text>
 
         {/* IMÁGENES */}
         <View style={styles.imagesContainer}>
 
           <Image
-            source={require('../assets/barda-ejemplo.jpg')} 
+            source={require('../assets/barda-ejemplo.jpg')}
             style={styles.image}
             resizeMode="cover"
           />
@@ -98,6 +95,8 @@ const styles = StyleSheet.create({
 
   container: {
     paddingHorizontal: 20,
+    paddingTop: 20,  // 🔥 controla el espacio superior
+    paddingBottom: 30,
   },
 
   mainTitle: {
@@ -105,8 +104,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#ccff34',
     textAlign: 'center',
-    marginBottom: 15,
-    lineHeight: 32,
+    marginBottom: 14,
+    lineHeight: 30,
   },
 
   subTitle: {
@@ -118,19 +117,19 @@ const styles = StyleSheet.create({
   },
 
   imagesContainer: {
-    gap: 10,
+    marginBottom: 20,
   },
 
   image: {
     width: '100%',
-    height: width * 0.55,
+    height: width * 0.50,
+    marginBottom: 5,
   },
 
   buttonsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 40,
-    marginBottom: 60,
+    marginTop: -5,
   },
 
   whatsButton: {

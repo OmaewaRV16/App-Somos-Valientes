@@ -10,6 +10,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
@@ -40,7 +41,7 @@ export default function CuponesPorNegocio({ route }) {
 
   const abrirWhatsApp = (whatsapp) => {
     if (!whatsapp) return;
-    const mensaje = `Hola 😊 vengo desde Sociedad Valiente para hacer válido mi cupón en ${negocio.nombre}.`;
+    const mensaje = `Hola 😊 vengo desde Sociedad Valiente para hacer válido mi cupón en ${negocio.nombre}. ¿Podrían brindarme información sobre cómo aplicarlo?`;
     const numero = whatsapp.replace(/\D/g, '');
     Linking.openURL(`https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`);
   };
@@ -50,20 +51,24 @@ export default function CuponesPorNegocio({ route }) {
     Linking.openURL(`tel:${numero}`);
   };
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item, index }) => {
     const lineas = item.descripcion?.split('\n') || [];
+    const esUltimo = index === cupones.length - 1;
+    const cardStyle = esUltimo ? styles.cardNormal : styles.cardGrande;
 
     return (
-      <View style={{ marginBottom: 30 }}>
-        <View style={styles.card}>
+      <View>
+        <View style={cardStyle}>
 
+          {/* ICONO SUPERIOR */}
           <Image
-            source={require('../assets/Formas-Color-Negro_06.png')}
+            source={require('../assets/Formas-Color-Verde_06.png')}
             style={styles.iconoSuperiorImg}
           />
 
+          {/* ICONO INFERIOR */}
           <Image
-            source={require('../assets/Formas-Color-Negro_03.png')}
+            source={require('../assets/Formas-Color-Verde_03.png')}
             style={styles.iconoInferiorImg}
           />
 
@@ -71,45 +76,39 @@ export default function CuponesPorNegocio({ route }) {
             Descuento válido {"\n"} en los siguientes servicios:
           </Text>
 
-          {lineas.map((linea, index) => (
+          {lineas.map((linea, i) => (
             <Text
-              key={index}
+              key={i}
               style={[
                 styles.descripcion,
-                index < 2 ? styles.descripcionBold : styles.descripcionItalic
+                i < 2 ? styles.descripcionBold : styles.descripcionItalic
               ]}
             >
               {linea}
             </Text>
           ))}
 
-          {item.whatsapp && (
+          {esUltimo && item.whatsapp && (
             <View style={styles.botonesContainer}>
               <Text style={styles.textoBotonContainer}>
                 Canjea tu cupón por WhatsApp o Llamada:
               </Text>
 
-              <View style={styles.filaBotones}>
+              <View style={styles.buttonsRow}>
                 <TouchableOpacity
-                  style={styles.botonWhatsapp}
+                  style={styles.whatsButton}
                   onPress={() => abrirWhatsApp(item.whatsapp)}
                 >
-                  <Image
-                    source={require('../assets/whatsapp.png')}
-                    style={styles.iconoBoton}
-                  />
-                  <Text style={styles.textoBoton}>WhatsApp</Text>
+                  <Ionicons name="logo-whatsapp" size={18} color="#000" />
+                  <Text style={styles.buttonText}>WhatsApp</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={styles.botonLlamar}
+                  style={styles.callButton}
                   onPress={() => llamarTelefono(item.whatsapp)}
                 >
-                  <Image
-                    source={require('../assets/telefono.png')}
-                    style={styles.iconoBotonTelefono}
-                  />
-                  <Text style={styles.textoBoton}>Llamar</Text>
+                  <Ionicons name="call" size={16} color="#ccff34" />
+                  <Text style={styles.callText}>Llamar</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -121,32 +120,20 @@ export default function CuponesPorNegocio({ route }) {
   };
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: '#000' }}
-      edges={['bottom']}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['bottom']}>
       <FlatList
         data={cupones}
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
-
-        /* 🔥 SCROLL NATURAL */
-        bounces
-        alwaysBounceVertical
-        overScrollMode="always"
-        decelerationRate="fast"
-
-        style={{ backgroundColor: '#000' }}
         contentContainerStyle={{
-          backgroundColor: '#000',
           paddingHorizontal: 20,
-          paddingBottom: 40 + insets.bottom, // 🔥 espacio dinámico inferior
-          flexGrow: 1,
+          paddingBottom: 40 + insets.bottom,
         }}
 
+        /* HEADER NEGOCIO */
         ListHeaderComponent={
-          <View style={{ backgroundColor: '#000' }}>
+          <View>
             <Text style={styles.header}>{negocio.nombre}</Text>
 
             <View style={styles.negocioCard}>
@@ -178,9 +165,10 @@ export default function CuponesPorNegocio({ route }) {
           </View>
         }
 
+        /* REDES SERGIO */
         ListFooterComponent={
           cupones.length > 0 ? (
-            <View style={{ backgroundColor: '#000' }}>
+            <View style={{ marginTop: 25 }}>
               <View style={styles.redesSergioBox}>
                 <Text style={styles.redesTituloBox}>
                   Sigue nuestras redes sociales:
@@ -200,8 +188,14 @@ export default function CuponesPorNegocio({ route }) {
                   )}
 
                   {cupones[0]?.tiktokSergio && (
-                    <TouchableOpacity onPress={() => abrirLink(cupones[0].tiktokSergio)}>
-                      <Image source={require('../assets/tiktok.png')} style={styles.iconoRed}/>
+                    <TouchableOpacity 
+                      style={styles.iconoRedContainer}
+                      onPress={() => abrirLink(cupones[0].tiktokSergio)}
+                    >
+                      <Image 
+                        source={require('../assets/tiktok.png')} 
+                        style={styles.iconoRed}
+                      />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -215,20 +209,24 @@ export default function CuponesPorNegocio({ route }) {
 }
 
 const styles = StyleSheet.create({
+
   header: {
     fontSize: 26,
     fontWeight: 'bold',
     color: '#ccff34',
     textAlign: 'center',
-    marginVertical: 20,
+    marginVertical: 25,
   },
 
   negocioCard: {
-    backgroundColor: '#ccff34',
+    backgroundColor: '#121212',
     flexDirection: 'row',
     padding: 20,
-    marginBottom: 25,
+    marginBottom: 30,
     alignItems: 'center',
+    borderRadius: 24,
+    borderBottomWidth: 2,
+    borderBottomColor: '#ccff34',
   },
 
   logoSection: {
@@ -237,20 +235,22 @@ const styles = StyleSheet.create({
   },
 
   logo: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 2,
+    borderColor: '#ccff34',
   },
 
   facebookNegocioIcon: {
     position: 'absolute',
-    bottom: -8,
-    right: -8,
+    bottom: -6,
+    right: -6,
   },
 
   iconoFacebookNegocio: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
   },
 
   descripcionSection: {
@@ -259,35 +259,47 @@ const styles = StyleSheet.create({
 
   descripcionNegocio: {
     fontSize: 14,
-    color: '#000',
+    color: '#ccc',
     lineHeight: 20,
   },
 
-  card: {
-    backgroundColor: '#ccff34',
-    padding: 20,
-    position: 'relative',
+  cardGrande: {
+    backgroundColor: '#121212',
+    padding: 30,
+    borderBottomWidth: 2,
+    borderBottomColor: '#ccff34',
+  },
+
+  cardNormal: {
+    backgroundColor: '#121212',
+    padding: 22,
+    borderBottomWidth: 2,
+    borderBottomColor: '#ccff34',
   },
 
   tituloDescuento: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
-    paddingVertical: 10,
+    paddingVertical: 14,
+    color: '#ccff34',
   },
 
   descripcion: {
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 24,
+    color: '#e0e0e0',
   },
 
   descripcionBold: {
     fontWeight: 'bold',
+    color: '#ffffff',
   },
 
   descripcionItalic: {
     fontStyle: 'italic',
-    fontSize: 12,
+    fontSize: 14,
+    color: '#bdbdbd',
   },
 
   botonesContainer: {
@@ -297,84 +309,87 @@ const styles = StyleSheet.create({
 
   textoBotonContainer: {
     fontWeight: '600',
-    marginBottom: 15,
+    marginBottom: 14,
     textAlign: 'center',
-    color: '#000',
+    color: '#ccff34',
     fontSize: 14,
   },
 
-  filaBotones: {
+  buttonsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 20,
   },
 
-  botonWhatsapp: {
-    backgroundColor: '#000',
+  whatsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 22,
-    borderRadius: 12,
+    backgroundColor: '#ccff34',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 25,
+    marginRight: 8,
   },
 
-  botonLlamar: {
-    backgroundColor: '#000',
+  callButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 22,
-    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#ccff34',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 25,
   },
 
-  iconoBoton: {
-    width: 22,
-    height: 22,
-    marginRight: 8,
-    resizeMode: 'contain',
+  buttonText: {
+    color: '#000',
+    fontWeight: 'bold',
+    marginLeft: 6,
+    fontSize: 13,
   },
 
-  iconoBotonTelefono: {
-    width: 22,
-    height: 22,
-    marginRight: 8,
-    resizeMode: 'contain',
-    backgroundColor: '#00ccff',
-    borderRadius: 12,
-    padding: 4,
-  },
-
-  textoBoton: {
+  callText: {
     color: '#ccff34',
     fontWeight: 'bold',
+    marginLeft: 6,
+    fontSize: 13,
   },
 
   redesSergioBox: {
-    backgroundColor: '#ccff34',
-    padding: 18,
-    borderRadius: 15,
+    backgroundColor: '#121212',
+    paddingVertical: 22,
+    paddingHorizontal: 20,
+    borderRadius: 24,
     alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#ccff34',
   },
 
   redesTituloBox: {
     fontWeight: 'bold',
-    marginBottom: 12,
+    marginBottom: 14,
+    color: '#ccff34',
+    fontSize: 15,
   },
 
   redesRow: {
     flexDirection: 'row',
-    gap: 25,
+    gap: 30,
   },
 
   iconoRed: {
-    width: 36,
-    height: 36,
+    width: 28,
+    height: 28,
+  },
+
+  iconoRedContainer: {
+    backgroundColor: '#ccff34',
+    borderRadius: 20,
   },
 
   iconoSuperiorImg: {
     position: 'absolute',
-    top: -10,
-    left: -10,
+    top: 5,
+    left: 5,
     width: 60,
     height: 60,
     resizeMode: 'contain',
@@ -382,10 +397,11 @@ const styles = StyleSheet.create({
 
   iconoInferiorImg: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 10,
     right: -15,
     width: 60,
     height: 60,
     resizeMode: 'contain',
   },
+
 });

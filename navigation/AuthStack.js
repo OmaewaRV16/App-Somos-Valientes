@@ -13,7 +13,6 @@ import AdminStack from './AdminStack';
 import CuponesPorNegocio from '../screens/CuponesPorNegocio';
 import DetalleCupon from '../screens/DetalleCupon';
 
-// 🔥 NUEVAS PANTALLAS
 import SerAportanteScreen from '../screens/SerAportanteScreen';
 import DifusionScreen from '../screens/DifusionScreen';
 import EnviarOpinionScreen from '../screens/EnviarOpinionScreen';
@@ -24,7 +23,10 @@ export default function AuthStack() {
   return (
     <Stack.Navigator
       initialRouteName="Welcome"
-      screenOptions={{ headerShown: false }}
+      screenOptions={{
+        headerShown: false,
+        backButtonDisplayMode: 'minimal', // 🔥 SOLO FLECHA EN TODO EL STACK
+      }}
     >
       {/* =====================
           ENTRADA
@@ -69,23 +71,20 @@ export default function AuthStack() {
         component={ParticipantTabs}
         options={{
           headerShown: false,
+          title: 'Atrás',
         }}
       />
 
       <Stack.Screen
         name="SponsorHome"
         component={SponsorTabs}
-        options={{
-          headerShown: false,
-        }}
+        options={{ headerShown: false }}
       />
 
       <Stack.Screen
         name="AdminHome"
         component={AdminStack}
-        options={{
-          headerShown: false,
-        }}
+        options={{ headerShown: false }}
       />
 
       {/* =====================
@@ -97,13 +96,9 @@ export default function AuthStack() {
         options={{
           title: 'Cupones',
           headerShown: true,
-          headerStyle: {
-            backgroundColor: '#ccff34',
-          },
+          headerStyle: { backgroundColor: '#ccff34' },
           headerTintColor: '#000',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
+          headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
 
@@ -113,33 +108,24 @@ export default function AuthStack() {
         options={{
           title: 'Detalle',
           headerShown: true,
-          headerStyle: {
-            backgroundColor: '#ccff34',
-          },
+          headerStyle: { backgroundColor: '#ccff34' },
           headerTintColor: '#000',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
+          headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
 
       {/* =====================
-          NUEVAS SCREENS SUMATE
+          SUMATE
       ====================== */}
-
       <Stack.Screen
         name="SerAportanteScreen"
         component={SerAportanteScreen}
         options={{
           title: 'Ser Aportante',
           headerShown: true,
-          headerStyle: {
-            backgroundColor: '#ccff34',
-          },
+          headerStyle: { backgroundColor: '#ccff34' },
           headerTintColor: '#000',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
+          headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
 
@@ -149,13 +135,9 @@ export default function AuthStack() {
         options={{
           title: 'Apoyar Difusión',
           headerShown: true,
-          headerStyle: {
-            backgroundColor: '#ccff34',
-          },
+          headerStyle: { backgroundColor: '#ccff34' },
           headerTintColor: '#000',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
+          headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
 
@@ -165,13 +147,9 @@ export default function AuthStack() {
         options={{
           title: 'Tu Opinión',
           headerShown: true,
-          headerStyle: {
-            backgroundColor: '#ccff34',
-          },
+          headerStyle: { backgroundColor: '#ccff34' },
           headerTintColor: '#000',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
+          headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
 

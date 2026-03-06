@@ -57,6 +57,19 @@ export default function NoticiasScreen() {
     if (supported) Linking.openURL(url);
   };
 
+  // 🔥 FORMATEAR FECHA
+  const formatearFecha = (fecha) => {
+    if (!fecha) return '';
+
+    const date = new Date(fecha);
+
+    return date.toLocaleDateString('es-MX', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <ImageBackground
@@ -64,13 +77,11 @@ export default function NoticiasScreen() {
         style={styles.imagen}
         imageStyle={{ borderTopLeftRadius: 28, borderTopRightRadius: 28 }}
       >
-        {/* 🔥 Sombra superior MÁS SUAVE */}
         <LinearGradient
           colors={['rgba(0,0,0,0.55)', 'rgba(0,0,0,0.25)', 'transparent']}
           style={styles.topImageShadow}
         />
 
-        {/* Logo */}
         <View style={styles.logoContainer}>
           <Image
             source={require('../assets/logo-verde.png')}
@@ -79,7 +90,6 @@ export default function NoticiasScreen() {
           />
         </View>
 
-        {/* Sombra inferior */}
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,1)']}
           style={styles.overlay}
@@ -97,12 +107,19 @@ export default function NoticiasScreen() {
           {item.descripcion}
         </Text>
 
-        <TouchableOpacity
-          style={styles.buttonContainer}
-          onPress={() => abrirLink(item.link)}
-        >
-          <Text style={styles.buttonText}>Leer más</Text>
-        </TouchableOpacity>
+        {/* 🔥 FOOTER CON BOTÓN Y FECHA */}
+        <View style={styles.footerRow}>
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={() => abrirLink(item.link)}
+          >
+            <Text style={styles.buttonText}>Leer más</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.fechaText}>
+            {formatearFecha(item.fechaPublicacion || item.createdAt)}
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -119,7 +136,6 @@ export default function NoticiasScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Sombra dinámica inferior */}
       <Animated.View
         pointerEvents="none"
         style={[
@@ -253,8 +269,18 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
 
+  footerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  fechaText: {
+    color: '#888',
+    fontSize: 12,
+  },
+
   buttonContainer: {
-    alignSelf: 'flex-start',
     backgroundColor: '#ccff34',
     paddingHorizontal: 26,
     paddingVertical: 12,

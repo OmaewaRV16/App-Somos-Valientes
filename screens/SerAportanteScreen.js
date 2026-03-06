@@ -17,8 +17,9 @@ const { width } = Dimensions.get('window');
 
 export default function SerAportanteScreen() {
 
-  const telefono = '9991234567'; // 🔥 CAMBIA ESTE NUMERO
-  const mensaje = 'Hola, quiero formar parte de Sociedad Valiente como aportante.';
+  const telefono = '9997478671'; // 🔥 CAMBIA ESTE NUMERO
+  const mensaje =
+  'Hola, me interesa formar parte de Sociedad Valiente como aportante con mi negocio o servicio. ¿Podrían brindarme información sobre cómo integrarme?';
 
   const abrirWhats = () => {
     const url = `https://wa.me/52${telefono}?text=${encodeURIComponent(mensaje)}`;

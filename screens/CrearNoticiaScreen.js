@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const API_URL = 'https://app-somos-valientes-production.up.railway.app';
 
@@ -19,27 +20,27 @@ export default function CrearNoticiaScreen({ navigation }) {
   const [descripcion, setDescripcion] = useState('');
   const [imagen, setImagen] = useState('');
   const [link, setLink] = useState('');
-  const [fechaPublicacion, setFechaPublicacion] = useState('');
+
+  const [fechaPublicacion, setFechaPublicacion] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
+
+  const onChangeFecha = (event, selectedDate) => {
+    if (Platform.OS !== 'ios') {
+      setShowPicker(false);
+    }
+    if (selectedDate) {
+      setFechaPublicacion(selectedDate);
+    }
+  };
 
   const guardar = async () => {
     if (
       !titulo.trim() ||
       !descripcion.trim() ||
       !imagen.trim() ||
-      !link.trim() ||
-      !fechaPublicacion.trim()
+      !link.trim()
     ) {
       Alert.alert('Error', 'Completa todos los campos obligatorios');
-      return;
-    }
-
-    // Validación básica formato YYYY-MM-DD
-    const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
-    if (!regexFecha.test(fechaPublicacion.trim())) {
-      Alert.alert(
-        'Formato inválido',
-        'La fecha debe estar en formato YYYY-MM-DD (ejemplo: 2026-03-05)'
-      );
       return;
     }
 
@@ -49,7 +50,9 @@ export default function CrearNoticiaScreen({ navigation }) {
         descripcion: descripcion.trim(),
         imagen: imagen.trim(),
         link: link.trim(),
-        fechaPublicacion: fechaPublicacion.trim(), // 🔥 NUEVO CAMPO
+        fechaPublicacion: fechaPublicacion
+          .toISOString()
+          .substring(0, 10),
       };
 
       const res = await fetch(`${API_URL}/api/noticias`, {
@@ -111,14 +114,30 @@ export default function CrearNoticiaScreen({ navigation }) {
           multiline
         />
 
+        {/* 🔥 FECHA CON BLOQUEO FUTURO */}
         <Text style={styles.label}>Fecha de Publicación *</Text>
-        <TextInput
-          value={fechaPublicacion}
-          onChangeText={setFechaPublicacion}
-          style={styles.input}
-          placeholder="YYYY-MM-DD (ejemplo: 2026-03-05)"
-          placeholderTextColor="#999"
-        />
+
+        <TouchableOpacity
+          style={styles.dateButton}
+          onPress={() => setShowPicker(!showPicker)}
+        >
+          <Text style={styles.dateText}>
+            {fechaPublicacion.toISOString().substring(0, 10)}
+          </Text>
+        </TouchableOpacity>
+
+        {showPicker && (
+          <View style={styles.pickerContainer}>
+            <DateTimePicker
+              value={fechaPublicacion}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'inline' : 'default'}
+              onChange={onChangeFecha}
+              maximumDate={new Date()} // 🔒 BLOQUEA FUTURO
+              themeVariant="light"
+            />
+          </View>
+        )}
 
         <Text style={styles.label}>URL de la Imagen *</Text>
         <TextInput
@@ -200,6 +219,22 @@ const styles = StyleSheet.create({
     padding: 14,
     fontSize: 16,
     marginBottom: 15,
+  },
+  dateButton: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 15,
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginBottom: 20,
+    overflow: 'hidden',
   },
   boton: {
     backgroundColor: '#ccff34',

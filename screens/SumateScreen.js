@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
 
   container: {
     paddingHorizontal: 20,
-    paddingTop: 30,
+    paddingTop: 25,
     paddingBottom: 40,
   },
 
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#999',
     fontSize: 14,
-    marginBottom: 35,
+    marginBottom: 15,
   },
 
   cardWrapper: {
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
     position: 'relative',
-    height: 240,
+    height: 260,
     justifyContent: 'space-between',
   },
 
