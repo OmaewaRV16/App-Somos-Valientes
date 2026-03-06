@@ -15,9 +15,9 @@
     },
 
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.AppSomosValientes",
-      "buildNumber": "13",
+      "buildNumber": "15",
       "infoPlist": {
         "CFBundleDisplayName": "Sociedad Valiente",
         "ITSAppUsesNonExemptEncryption": false,
